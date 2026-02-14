@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Completo - Sistema de Tickets UPTEX v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin: 10px 0;
+        }
+        
+        .header .meta {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 15px;
+        }
+        
+        /* Table of Contents */
+        .toc {
+            background: #f0f4ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+        
+        .toc h2 {
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .toc ol {
+            margin-left: 20px;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Sections */
+        section {
+            margin: 40px 0;
+            page-break-inside: avoid;
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            color: #1e40af;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 10px;
+            margin: 30px 0 20px 0;
+        }
+        
+        h3 {
+            font-size: 1.3em;
+            color: #1e5cc7;
+            margin: 20px 0 10px 0;
+        }
+        
+        h4 {
+            font-size: 1.1em;
+            color: #2563eb;
+            margin: 15px 0 8px 0;
+        }
+        
+        /* Contenido General */
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        
+        li {
+            margin: 8px 0;
+            margin-left: 20px;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #c7254e;
+        }
+        
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        pre code {
+            background: none;
+            color: #d4d4d4;
+            padding: 0;
+        }
+        
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        table th {
+            background: #1e40af;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        table tr:hover {
+            background: #f0f4ff;
+        }
+        
+        /* Cajas de énfasis */
+        .box {
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin: 20px 0;
+            background: #f0f4ff;
+            border-radius: 4px;
+        }
+        
+        .box-success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .box-warning {
+            border-left-color: #f59e0b;
+            background: #fffbf0;
+        }
+        
+        .box-danger {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .box-info {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .box h4 {
+            margin-top: 0;
+        }
+        
+        /* Diagrama */
+        .diagram {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #0c4a6e;
+        }
+        
+        /* Listas especiales */
+        .feature-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+        
+        .feature-list li {
+            margin-left: 0;
+            padding-left: 25px;
+            position: relative;
+            margin: 10px 0;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .problem-list li:before {
+            content: "⚠";
+            color: #f59e0b;
+        }
+        
+        /* Page breaks para PDF */
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 0;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+            section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📊 ANÁLISIS COMPLETO</h1>
+            <h1>Sistema de Tickets UPTEX</h1>
+            <p class="subtitle">VERSIÓN 2.0 - COMPLETA Y DEFINITIVA</p>
+            <div class="meta">
+                <p><strong>Fecha:</strong> 14 de febrero de 2026</p>
+                <p><strong>Estado:</strong> ✅ Documentación con Requerimientos Finales</p>
+            </div>
+        </div>
+        
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc">
+            <h2>📑 TABLA DE CONTENIDOS</h2>
+            <ol>
+                <li><a href="#seccion1">Resumen Ejecutivo</a></li>
+                <li><a href="#seccion2">Arquitectura General</a></li>
+                <li><a href="#seccion3">Estructura del Proyecto</a></li>
+                <li><a href="#seccion4">Flujo de la Aplicación</a></li>
+                <li><a href="#seccion5">Análisis de Roles y Permisos</a></li>
+                <li><a href="#seccion6">Módulo Administrador</a></li>
+                <li><a href="#seccion7">Módulo Técnico</a></li>
+                <li><a href="#seccion8">Módulo Usuario Normal</a></li>
+                <li><a href="#seccion9">Código Innecesario</a></li>
+                <li><a href="#seccion10">Mejoras Fase 1 (Arquitectura)</a></li>
+                <li><a href="#seccion11">Mejoras Fase 2 (UX/UI)</a></li>
+                <li><a href="#seccion12">Mejoras Fase 2B (Optimizaciones)</a></li>
+                <li><a href="#seccion13">Mejoras Fase 3 (Seguridad Avanzada)</a></li>
+                <li><a href="#seccion14">Mejoras Fase 4 (Características Nuevas)</a></li>
+                <li><a href="#seccion15">Plan Final de Implementación</a></li>
+                <li><a href="#seccion16">Nuevos Requerimientos UPTEX</a></li>
+                <li><a href="#seccion17">Plan de Trabajo Colaborativo por Roles</a></li>
+            </ol>
+        </div>
+        
+        <!-- SECCIÓN 1 -->
+        <section id="seccion1">
+            <h2>1. 📋 RESUMEN EJECUTIVO</h2>
+            
+            <h3>Estado General del Proyecto: ✅ BIEN ESTRUCTURADO</h3>
+            
+            <h4>✓ Fortalezas Identificadas:</h4>
+            <ul class="feature-list">
+                <li>Arquitectura de 3 capas bien separada (API + Web)</li>
+                <li>Control de roles implementado correctamente</li>
+                <li>Base de datos normalizada eficiente</li>
+                <li>Rutas organizadas por contexto</li>
+                <li>Uso de Laravel Sanctum para autenticación API</li>
+                <li>Modelos con relaciones bien definidas</li>
+            </ul>
+            
+            <h4>⚠️ Problemas Encontrados:</h4>
+            <ul class="problem-list">
+                <li><strong>CRÍTICO:</strong> Duplicación de modelo Usuario (User.php + Usuario.php)</li>
+                <li><strong>CRÍTICO:</strong> Tabla 'users' huérfana en BD</li>
+                <li><strong>MEDIO:</strong> Código duplicado en controladores Web y API</li>
+                <li><strong>MEDIO:</strong> Validaciones no centralizadas</li>
+                <li><strong>BAJO:</strong> Algunas rutas pueden optimizarse</li>
+            </ul>
+            
+            <h4>📊 Estadísticas:</h4>
+            <table>
+                <tr>
+                    <th>Elemento</th>
+                    <th>Cantidad</th>
+                    <th>Estado</th>
+                </tr>
+                <tr>
+                    <td>Controladores API</td>
+                    <td>7</td>
+                    <td><span class="badge badge-success">✓ Bien</span></td>
+                </tr>
+                <tr>
+                    <td>Controladores Web</td>
+                    <td>4</td>
+                    <td><span class="badge badge-success">✓ Bien</span></td>
+                </tr>
+                <tr>
+                    <td>Modelos</td>
+                    <td>8 (con duplicados)</td>
+                    <td><span class="badge badge-warning">⚠️ Revisar</span></td>
+                </tr>
+                <tr>
+                    <td>Rutas Totales</td>
+                    <td>50+</td>
+                    <td><span class="badge badge-success">✓ Organizadas</span></td>
+                </tr>
+                <tr>
+                    <td>Middlewares</td>
+                    <td>3</td>
+                    <td><span class="badge badge-success">✓ Funcionales</span></td>
+                </tr>
+                <tr>
+                    <td>Vistas Blade</td>
+                    <td>21</td>
+                    <td><span class="badge badge-success">✓ Completas</span></td>
+                </tr>
+            </table>
+        </section>
+        
+        <!-- SECCIÓN 2 -->
+        <section id="seccion2">
+            <h2>2. 🏗️ ARQUITECTURA GENERAL</h2>
+            
+            <h3>Componentes Principales:</h3>
+            
+            <div class="diagram">┌─────────────────────────────────────┐
+│     CLIENTE (Web Browser)            │
+│  - Blade Templates (HTML/CSS/JS)     │
+│  - API REST Client (JSON)            │
+└────────────────────┬────────────────┘
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+        ▼                         ▼
+   WEB FRONTEND          API REST
+   (Sessions)            (Tokens)
+        │                         │
+        └────────────┬────────────┘
+                     │
+        ┌────────────▼────────────┐
+        │    CONTROLADORES        │
+        │  - WebController        │
+        │  - ApiControllers       │
+        │  - Middlewares          │
+        └────────────┬────────────┘
+                     │
+        ┌────────────▼────────────┐
+        │    MODELOS (Eloquent)   │
+        │  - Usuario              │
+        │  - Ticket               │
+        │  - Rol                  │
+        │  - Área, Estado, etc    │
+        └────────────┬────────────┘
+                     │
+        ┌────────────▼────────────┐
+        │  BASE DE DATOS MySQL    │
+        │  (9 tablas)             │
+        └─────────────────────────┘</div>
+            
+            <h3>Autenticación:</h3>
+            <div class="box box-info">
+                <p><strong>Web (Blade):</strong> Sesiones PHP + Token simulado</p>
+                <p><strong>API:</strong> Laravel Sanctum + Bearer Token</p>
+                <p><strong>Ambos:</strong> Validan contra tabla 'usuarios'</p>
+            </div>
+        </section>
+        
+        <!-- SECCIÓN 3 -->
+        <section id="seccion3">
+            <h2>3. 📁 ESTRUCTURA DEL PROYECTO</h2>
+            
+            <h3>Árbol de Directorios:</h3>
+            
+            <pre><code>app/Http/Controllers/
+├── Api/                      (7 controladores)
+│   ├── AuthController.php
+│   ├── TicketController.php
+│   ├── DashboardController.php
+│   ├── UsuarioController.php
+│   ├── ReporteController.php
+│   ├── CatalogoController.php
+│   └── ComentarioController.php
+│
+└── Web/                      (4 controladores)
+    ├── WebController.php
+    ├── TicketWebController.php
+    ├── UsuarioWebController.php
+    └── ReporteWebController.php
+
+app/Models/
+├── Usuario.php              (Principal)
+├── User.php                 (❌ DUPLICADO - NO USAR)
+├── Ticket.php
+├── Rol.php
+├── Comentario.php
+├── Area.php
+├── Estado.php
+└── Prioridad.php
+
+routes/
+├── web.php                  (Rutas web)
+├── api.php                  (Rutas API)
+└── console.php
+
+resources/views/
+├── auth/                    (Login/Registro)
+├── admin/                   (Dashboard Admin)
+├── tecnicos/                (Dashboard Técnico)
+├── tickets/                 (Gestión tickets)
+├── usuarios/                (Gestión usuarios)
+├── reportes/                (Reportes)
+└── layouts/                 (Templates)</code></pre>
+            
+            <h3>Modelos y Relaciones:</h3>
+            <table>
+                <tr>
+                    <th>Modelo</th>
+                    <th>Tabla</th>
+                    <th>Descripción</th>
+                    <th>Relaciones</th>
+                </tr>
+                <tr>
+                    <td><strong>Usuario</strong></td>
+                    <td>usuarios</td>
+                    <td>Usuario + Autenticación</td>
+                    <td>Rol, Tickets, Comentarios</td>
+                </tr>
+                <tr>
+                    <td><strong>Rol</strong></td>
+                    <td>roles</td>
+                    <td>Admin, Técnico, Usuario</td>
+                    <td>Usuarios</td>
+                </tr>
+                <tr>
+                    <td><strong>Ticket</strong></td>
+                    <td>tickets</td>
+                    <td>Solicitud de soporte</td>
+                    <td>Usuario, Técnico, Área, Estado, Prioridad</td>
+                </tr>
+                <tr>
+                    <td><strong>Comentario</strong></td>
+                    <td>comentarios</td>
+                    <td>Comunicación en tickets</td>
+                    <td>Ticket, Usuario</td>
+                </tr>
+                <tr>
+                    <td><strong>Área</strong></td>
+                    <td>areas</td>
+                    <td>Rectoría, Admin, Finanzas, Docencia</td>
+                    <td>Tickets</td>
+                </tr>
+                <tr>
+                    <td><strong>Estado</strong></td>
+                    <td>estados</td>
+                    <td>Abierto, En Progreso, Cerrado</td>
+                    <td>Tickets</td>
+                </tr>
+                <tr>
+                    <td><strong>Prioridad</strong></td>
+                    <td>prioridades</td>
+                    <td>Baja, Media, Alta, Crítica</td>
+                    <td>Tickets</td>
+                </tr>
+                <tr>
+                    <td><strong>User</strong> ❌</td>
+                    <td>users</td>
+                    <td>NO USADO - DUPLICADO</td>
+                    <td>Ninguna</td>
+                </tr>
+            </table>
+        </section>
+        
+        <!-- SECCIÓN 4 -->
+        <section id="seccion4">
+            <h2>4. 🔄 FLUJO DE LA APLICACIÓN</h2>
+            
+            <h3>Ciclo de Vida de un Request:</h3>
+            
+            <div class="diagram">1. Cliente hace HTTP Request
+   ↓
+2. Laravel recepciona en app.php
+   ↓
+3. Verifica ruta:
+   ├─ /api/...   → Rutas API
+   │  ├─ auth:sanctum
+   │  ├─ role:X (si aplica)
+   │  └─ Controller API
+   │
+   └─ /...       → Rutas Web
+      ├─ web.auth
+      ├─ web.admin/tecnico (si aplica)
+      └─ Controller Web → View Blade
+   ↓
+4. Controller procesa:
+   ├─ Validación de datos
+   ├─ Interacción con Modelos
+   └─ Retorna JSON o HTML
+   ↓
+5. Response al cliente</div>
+            
+            <h3>Ejemplo: Crear Ticket (Usuario Normal)</h3>
+            <pre><code>1. GET /tickets/create
+   → WebController->create()
+   → Retorna formulario Blade
+
+2. POST /tickets
+   → Validación
+   → WebController->store()
+   → Inserta en BD
+   → Redirect a /tickets/{id}
+
+3. GET /tickets/{id}
+   → Muestra detalle con estado</code></pre>
+        </section>
+        
+        <!-- SECCIÓN 5 -->
+        <section id="seccion5">
+            <h2>5. 👥 ANÁLISIS DE ROLES Y PERMISOS</h2>
+            
+            <h3>Jerarquía de Roles:</h3>
+            
+            <h4>ADMINISTRADOR (id=1)</h4>
+            <div class="box box-success">
+                <h4>Permisos:</h4>
+                <ul>
+                    <li>Ver todos los tickets (sin filtros)</li>
+                    <li>Crear/Editar/Eliminar usuarios</li>
+                    <li>Asignar técnicos a tickets</li>
+                    <li>Cambiar estado de tickets</li>
+                    <li>Ver todos los reportes</li>
+                    <li>Exportar datos</li>
+                    <li>Acceso total al sistema</li>
+                </ul>
+                <p><strong>Restricciones:</strong> Ninguna</p>
+            </div>
+            
+            <h4>TÉCNICO (id=2)</h4>
+            <div class="box box-info">
+                <h4>Permisos:</h4>
+                <ul>
+                    <li>Ver tickets asignados a él</li>
+                    <li>Cambiar estado de tickets</li>
+                    <li>Agregar comentarios</li>
+                    <li>Ver historial de tickets</li>
+                    <li>Cambiar contraseña</li>
+                    <li>Recuperar contraseña</li>
+                </ul>
+                <h4>Restricciones:</h4>
+                <ul>
+                    <li>Solo ve sus tickets</li>
+                    <li>NO puede eliminar</li>
+                    <li>NO accede a reportes</li>
+                    <li>NO gestiona usuarios</li>
+                    <li>NO puede asignar técnicos</li>
+                    <li>NO ve tickets de otros técnicos</li>
+                </ul>
+            </div>
+            
+            <h4>USUARIO NORMAL (id=3)</h4>
+            <div class="box box-warning">
+                <h4>Permisos:</h4>
+                <ul>
+                    <li>Crear tickets (reportar problema)</li>
+                    <li>Ver sus propios tickets</li>
+                    <li>VER estado (no comentar)</li>
+                    <li>Cambiar contraseña (3 veces/mes)</li>
+                    <li>Recuperar contraseña</li>
+                    <li>Responder encuestas</li>
+                </ul>
+                <h4>Restricciones:</h4>
+                <ul>
+                    <li>Solo ve sus tickets</li>
+                    <li>NO puede cambiar estado</li>
+                    <li>NO ve comentarios internos</li>
+                    <li>NO accede a reportes</li>
+                    <li>NO gestiona usuarios</li>
+                    <li>NO puede eliminar tickets</li>
+                </ul>
+            </div>
+            
+            <h3>Verificación en 3 Niveles:</h3>
+            
+            <p><strong>1. Middleware de Autenticación:</strong></p>
+            <pre><code>Route::middleware('auth:sanctum')->group(...) // API
+Route::middleware('web.auth')->group(...)     // Web</code></pre>
+            
+            <p><strong>2. Middleware de Rol:</strong></p>
+            <pre><code>Route::middleware('role:Administrador')->group(...)
+Route::middleware('web.admin')->group(...)</code></pre>
+            
+            <p><strong>3. Verificación en Controlador:</strong></p>
+            <pre><code>if (!$request->user()->esAdministrador()) {
+    return response()->json(['message' => 'No autorizado'], 403);
+}</code></pre>
+        </section>
+        
+        <!-- SECCIÓN 6 -->
+        <section id="seccion6">
+            <h2>6. 👨‍💼 MÓDULO ADMINISTRADOR</h2>
+            
+            <h3>Funcionalidades:</h3>
+            <ul>
+                <li>Dashboard con estadísticas globales</li>
+                <li>Gestión completa de tickets</li>
+                <li>CRUD de usuarios</li>
+                <li>Reportes (por fecha, por técnico)</li>
+                <li>Exportación de datos</li>
+                <li>Perfil personal</li>
+            </ul>
+            
+            <h3>Rutas Principales:</h3>
+            
+            <p><strong>Web:</strong></p>
+            <pre><code>GET  /dashboard                 → Dashboard
+GET  /tickets                   → Listar todos
+POST /tickets/{id}/asignar      → Asignar técnico
+GET  /usuarios                  → Gestión usuarios
+POST /usuarios                  → Crear usuario
+GET  /reportes                  → Reportes</code></pre>
+            
+            <p><strong>API:</strong></p>
+            <pre><code>GET  /api/tickets               → Listar todos
+POST /api/tickets/{id}/asignar  → Asignar
+PUT  /api/usuarios/{id}         → Editar usuario</code></pre>
+            
+            <h3>Controladores:</h3>
+            <ul>
+                <li>WebController (dashboard, perfil)</li>
+                <li>TicketWebController (gestión tickets)</li>
+                <li>UsuarioWebController (CRUD usuarios)</li>
+                <li>ReporteWebController (reportes)</li>
+                <li>API Controllers respectivos</li>
+            </ul>
+        </section>
+        
+        <!-- SECCIÓN 7 -->
+        <section id="seccion7">
+            <h2>7. 🔧 MÓDULO TÉCNICO</h2>
+            
+            <h3>Funcionalidades:</h3>
+            <ul>
+                <li>Dashboard técnico</li>
+                <li>Ver tickets asignados</li>
+                <li>Cambiar estado de tickets</li>
+                <li>Agregar comentarios (solución)</li>
+                <li>Ver historial</li>
+                <li>Perfil</li>
+            </ul>
+            
+            <h3>Rutas Principales:</h3>
+            
+            <p><strong>Web:</strong></p>
+            <pre><code>GET  /dashboard                   → Dashboard
+GET  /tickets-asignados           → Mis tickets
+GET  /tickets/{id}                → Ver detalle
+POST /tickets/{id}/cambiar-estado → Cambiar estado
+POST /tickets/{id}/comentarios    → Agregar comentario
+GET  /historial-tickets           → Cerrados</code></pre>
+            
+            <p><strong>API:</strong></p>
+            <pre><code>GET  /api/dashboard/asignados     → Mis tickets
+PUT  /api/tickets/{id}/estado     → Cambiar estado
+POST /api/tickets/{id}/comentarios → Comentar</code></pre>
+            
+            <h3>Restricciones:</h3>
+            <ul>
+                <li>Solo ve sus tickets</li>
+                <li>NO elimina</li>
+                <li>NO cambia asignación</li>
+                <li>NO ve reportes</li>
+                <li>Descripción original BLOQUEADA (no edita)</li>
+            </ul>
+        </section>
+        
+        <!-- SECCIÓN 8 -->
+        <section id="seccion8">
+            <h2>8. 👤 MÓDULO USUARIO NORMAL</h2>
+            
+            <h3>Funcionalidades:</h3>
+            <ul>
+                <li>Crear tickets</li>
+                <li>Ver sus tickets</li>
+                <li>Ver estado</li>
+                <li>✅ NUEVA: Responder encuestas</li>
+                <li>Cambiar contraseña</li>
+            </ul>
+            
+            <h3>Rutas Principales:</h3>
+            
+            <p><strong>Web:</strong></p>
+            <pre><code>GET  /dashboard                 → Dashboard
+GET  /tickets/create            → Crear ticket
+GET  /tickets/{id}              → Ver detalle
+GET  /mis-tickets               → Mis tickets
+GET  /encuestas                 → Encuestas (NUEVA)</code></pre>
+            
+            <p><strong>API:</strong></p>
+            <pre><code>POST /api/auth/login            → Login
+POST /api/tickets               → Crear ticket
+GET  /api/tickets/{id}          → Ver detalle
+POST /api/encuestas             → Responder encuesta (NUEVA)</code></pre>
+            
+            <h3>Restricciones:</h3>
+            <ul>
+                <li>Solo ve sus tickets</li>
+                <li>NO ve comentarios</li>
+                <li>NO ve otros usuarios</li>
+                <li>NO accede a reportes</li>
+                <li>CAMPO PRIORIDAD: Oculto (Admin elige)</li>
+                <li>CAMPO COMENTARIOS: Oculto (Solo técnico)</li>
+                <li>CAMPO ÁREA: Autollenado</li>
+                <li>Cambios password: 3/mes máximo</li>
+                <li>SIN Asistente IA</li>
+            </ul>
+        </section>
+        
+        <!-- SECCIÓN 9 -->
+        <section id="seccion9">
+            <h2>9. ⚠️ CÓDIGO INNECESARIO</h2>
+            
+            <h3>CRÍTICOS:</h3>
+            
+            <div class="box box-danger">
+                <h4>1. Duplicación de User Model</h4>
+                <p><strong>Problema:</strong> Existe User.php que no se usa</p>
+                <p><strong>Impacto:</strong> Confusión, tabla 'users' huérfana</p>
+                <p><strong>Solución:</strong> Eliminar user.php y tabla users</p>
+            </div>
+            
+            <div class="box box-danger">
+                <h4>2. Token no Usado</h4>
+                <p><strong>Problema:</strong> En WebController->login(), variable $token se crea pero nunca se usa</p>
+                <p><strong>Solución:</strong> Remover línea</p>
+            </div>
+            
+            <h3>SECUNDARIOS:</h3>
+            
+            <div class="box box-warning">
+                <h4>3. Validaciones Duplicadas</h4>
+                <p><strong>Problema:</strong> Mismo código en TicketWebController y ApiTicketController</p>
+                <p><strong>Solución:</strong> Crear Form Request centralizado</p>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>4. Sin Caché</h4>
+                <p><strong>Problema:</strong> Catálogos consultados en cada request</p>
+                <p><strong>Solución:</strong> Implementar cache</p>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>5. Sin Rate Limiting</h4>
+                <p><strong>Problema:</strong> Login sin protección contra ataques</p>
+                <p><strong>Solución:</strong> Agregar rate limiting</p>
+            </div>
+        </section>
+        
+        <!-- SECCIÓN 10 -->
+        <section id="seccion10">
+            <h2>10. 🚀 MEJORAS FASE 1 (ARQUITECTURA)</h2>
+            
+            <h3>Limpieza de Código:</h3>
+            <ol>
+                <li>Eliminar User.php</li>
+                <li>Eliminar tabla users</li>
+                <li>Remover variable token no usada</li>
+                <li>Crear Form Requests centralizadas</li>
+            </ol>
+            
+            <h3>Optimización:</h3>
+            <ol>
+                <li>Centralizar validaciones en FormRequests</li>
+                <li>Agregar caché para catálogos</li>
+                <li>Implementar eager loading</li>
+                <li>Agregar rate limiting en login</li>
+            </ol>
+            
+            <h3>Seguridad Fase 1:</h3>
+            <ol>
+                <li>Bloqueo de cuenta tras 3 intentos</li>
+                <li>Limite de cambios de contraseña (3/mes)</li>
+                <li>Validación de recuperar contraseña</li>
+            </ol>
+        </section>
+        
+        <!-- SECCIÓN 11 -->
+        <section id="seccion11">
+            <h2>11. 🎨 MEJORAS FASE 2 (UX/UI)</h2>
+            
+            <h3>Mejoras Visuales Principales:</h3>
+            <table>
+                <tr>
+                    <th>Mejora</th>
+                    <th>Descripción</th>
+                    <th>Cómo</th>
+                </tr>
+                <tr>
+                    <td><strong>🎨 LÍNEA DE PRIORIDAD COLOREADA</strong></td>
+                    <td>Toda la fila del ticket toma color según prioridad</td>
+                    <td>CSS dinámico + clases Blade</td>
+                </tr>
+                <tr>
+                    <td><strong>🔴 Crítica = ROJO</strong></td>
+                    <td>Fondo rojo oscuro, texto blanco, borde rojo</td>
+                    <td>class="priority-critical"</td>
+                </tr>
+                <tr>
+                    <td><strong>🟠 Alta = NARANJA</strong></td>
+                    <td>Fondo naranja claro</td>
+                    <td>class="priority-high"</td>
+                </tr>
+                <tr>
+                    <td><strong>🟡 Media = AMARILLO</strong></td>
+                    <td>Fondo amarillo claro</td>
+                    <td>class="priority-medium"</td>
+                </tr>
+                <tr>
+                    <td><strong>🟢 Baja = VERDE</strong></td>
+                    <td>Fondo verde claro</td>
+                    <td>class="priority-low"</td>
+                </tr>
+                <tr>
+                    <td><strong>💬 COMENTARIOS MEJORADOS</strong></td>
+                    <td>Mejor UI, timestamps, edición limitada</td>
+                    <td>Interfaz renovada en Blade</td>
+                </tr>
+                <tr>
+                    <td><strong>Diseño ASIMÉTRICO</strong></td>
+                    <td>Tarjetas y layouts no uniformes</td>
+                    <td>Bootstrap custom + grid</td>
+                </tr>
+                <tr>
+                    <td><strong>REFRESH AUTOMÁTICO</strong></td>
+                    <td>Actualizar cada 30-60 seg O botón manual</td>
+                    <td>AJAX + setInterval</td>
+                </tr>
+                <tr>
+                    <td><strong>Descripción BLOQUEADA</strong></td>
+                    <td>Técnico NO edita descripción original</td>
+                    <td>disabled attribute</td>
+                </tr>
+                <tr>
+                    <td><strong>Técnico en BLANCO</strong></td>
+                    <td>Campo vacío hasta asignación</td>
+                    <td>Condicional en Blade</td>
+                </tr>
+                <tr>
+                    <td><strong>Estado PRE-SELECCIONADO</strong></td>
+                    <td>Mostrar estado actual en modal</td>
+                    <td>JavaScript pre-fill</td>
+                </tr>
+                <tr>
+                    <td><strong>Indicador NUEVO</strong></td>
+                    <td>Badge en tickets no leídos</td>
+                    <td>Timestamp leido_por_tecnico</td>
+                </tr>
+            </table>
+            
+            <h3>CSS para Colorear Tickets:</h3>
+            <pre><code>/* En resources/css/app.css */
+.table-row-critical {
+    background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+}
+
+.table-row-critical td {
+    border-bottom: 2px solid #dc2626;
+    font-weight: 500;
+}
+
+.table-row-high {
+    background: #fed7aa;
+    border-left: 4px solid #f97316;
+}
+
+.table-row-medium {
+    background: #fef3c7;
+    border-left: 4px solid #eab308;
+}
+
+.table-row-low {
+    background: #dcfce7;
+    border-left: 4px solid #22c55e;
+}</code></pre>
+            
+            <h3>Implementación en Blade:</h3>
+            <pre><code>&lt;table class="table"&gt;
+  &lt;tbody&gt;
+    @foreach($tickets as $ticket)
+      &lt;tr class="@if($ticket->prioridad->nombre === 'Crítica')
+                        table-row-critical
+                     @elseif($ticket->prioridad->nombre === 'Alta')
+                        table-row-high
+                     @elseif($ticket->prioridad->nombre === 'Media')
+                        table-row-medium
+                     @else
+                        table-row-low
+                     @endif"&gt;
+        &lt;td&gt;{{ $ticket->id_ticket }}&lt;/td&gt;
+        &lt;td&gt;{{ $ticket->titulo }}&lt;/td&gt;
+        &lt;!-- más columnas --&gt;
+      &lt;/tr&gt;
+    @endforeach
+  &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+            
+            <h3>Cambios BD:</h3>
+            <pre><code>ALTER TABLE tickets ADD COLUMN (
+    leido_por_tecnico TIMESTAMP NULL,
+    leido_por_usuario TIMESTAMP NULL
+);
+
+ALTER TABLE usuarios ADD COLUMN (
+    login_intentos INT DEFAULT 0,
+    bloqueado_hasta TIMESTAMP NULL,
+    cambios_password_mes INT DEFAULT 0,
+    ultimo_cambio_password TIMESTAMP NULL
+);</code></pre>
+            
+            <h3>Notificaciones en Tiempo Real:</h3>
+            <ul>
+                <li>WebSockets (Socket.io + Pusher O Redis)</li>
+                <li>Polling AJAX (cada 30 seg)</li>
+                <li>Email notificaciones</li>
+            </ul>
+        </section>
+        
+        <!-- SECCIÓN 12: FASE 2B - OPTIMIZACIONES -->
+        <section id="seccion12">
+            <h2>12. ⚡ MEJORAS FASE 2B (OPTIMIZACIONES)</h2>
+            
+            <div class="box box-info">
+                <h4>1. 💾 CACHÉ PARA CATÁLOGOS</h4>
+                <p><strong>Qué cachear:</strong> Roles, Áreas, Estados, Prioridades</p>
+                <p><strong>Implementación:</strong></p>
+                <pre><code>// En CatalogoController
+public function roles()
+{
+    return Cache::remember('roles', 3600, function () {
+        return Rol::all();
+    });
+}
+
+// Invalidar caché cuando cambien datos
+Rol::created(fn() => Cache::forget('roles'));</code></pre>
+                <p><strong>Beneficio:</strong> Reducir consultas BD hasta 80%</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>2. 🚀 EAGER LOADING</h4>
+                <p><strong>Problema:</strong> Consultas N+1 en tickets</p>
+                <p><strong>Solución:</strong></p>
+                <pre><code>// ANTES (MAL - N+1):
+$tickets = Ticket::all();
+foreach ($tickets as $ticket) {
+    echo $ticket->usuario->nombre; // Query adicional por cada ticket
+}
+
+// DESPUÉS (BIEN - Eager Loading):
+$tickets = Ticket::with('usuario', 'tecnicoAsignado', 'area', 'prioridad', 'estado')->get();
+foreach ($tickets as $ticket) {
+    echo $ticket->usuario->nombre; // Sin queries adicionales
+}</code></pre>
+                <p><strong>Dónde aplicar:</strong> Todos los index/show de controladores</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>3. 📖 PAGINACIÓN EN LISTAS</h4>
+                <p><strong>Implementar en:</strong></p>
+                <ul>
+                    <li>GET /tickets → 15 por página</li>
+                    <li>GET /usuarios → 20 por página</li>
+                    <li>GET /reportes → 50 por página</li>
+                    <li>GET /comentarios → 10 por página</li>
+                </ul>
+                <pre><code>// En controlador
+$tickets = Ticket::paginate(15);
+
+// En Blade
+{{ $tickets->links() }}  // Automático con Bootstrap</code></pre>
+            </div>
+            
+            <div class="box box-info">
+                <h4>4. 🗂️ ÍNDICES EN BD</h4>
+                <p><strong>Crear migración:</strong></p>
+                <pre><code>// database/migrations/2026_02_14_add_indexes_for_performance.php
+Schema::table('tickets', function (Blueprint $table) {
+    $table->index('id_usuario');
+    $table->index('id_tecnico_asignado');
+    $table->index('id_area');
+    $table->index('fecha_creacion');
+    $table->index('estado_id');
+});
+
+Schema::table('comentarios', function (Blueprint $table) {
+    $table->index('id_ticket');
+    $table->index('id_usuario');
+});
+
+Schema::table('usuarios', function (Blueprint $table) {
+    $table->index('id_rol');
+    $table->index('email');
+});</code></pre>
+                <p><strong>Impacto:</strong> Queries ~70% más rápidas</p>
+            </div>
+        </section>
+        
+        <!-- SECCIÓN 13: FASE 3 - SEGURIDAD AVANZADA -->
+        <section id="seccion13">
+            <h2>13. 🔐 MEJORAS FASE 3 (SEGURIDAD AVANZADA)</h2>
+            
+            <div class="box box-danger">
+                <h4>1. ⏰ RATE LIMITING EN LOGIN</h4>
+                <p><strong>Requisito:</strong> Máximo 3 intentos fallidos = bloqueo temporal</p>
+                <p><strong>Duración bloqueo:</strong> 15 minutos</p>
+                <pre><code>// En AuthController->login()
+$usuario = Usuario::where('email', $request->email)->first();
+
+if (!$usuario || !Hash::check($request->password, $usuario->password)) {
+    $usuario?->increment('login_intentos');
+    
+    if ($usuario && $usuario->login_intentos >= 3) {
+        $usuario->update([
+            'bloqueado_hasta' => now()->addMinutes(15)
+        ]);
+        return response()->json([
+            'message' => 'Cuenta bloqueada por 15 minutos'
+        ], 429);
+    }
+    throw ValidationException::withMessages([
+        'email' => 'Credenciales inválidas'
+    ]);
+}
+
+// Reset al login exitoso
+$usuario->update([
+    'login_intentos' => 0,
+    'bloqueado_hasta' => null
+]);</code></pre>
+            </div>
+            
+            <div class="box box-danger">
+                <h4>2. 🤖 CAPTCHA EN REGISTRO</h4>
+                <p><strong>Librería:</strong> Google reCAPTCHA v3</p>
+                <p><strong>Instalación:</strong></p>
+                <pre><code>composer require anhskohbo/no-captcha</code></pre>
+                <p><strong>En formulario:</strong></p>
+                <pre><code>&lt;form&gt;
+    &lt;input type="email" name="email"&gt;
+    &lt;input type="password" name="password"&gt;
+    {!! app('captcha')->display() !!}
+    &lt;button type="submit"&gt;Registrarse&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+                <p><strong>Validación:</strong></p>
+                <pre><code>'g-recaptcha-response' => 'required|captcha'</code></pre>
+            </div>
+            
+            <div class="box box-danger">
+                <h4>3. 🔑 2FA (AUTENTICACIÓN DE DOS FACTORES) - ADMIN</h4>
+                <p><strong>Librería:</strong> Laravel 2FA</p>
+                <p><strong>Instalación:</strong></p>
+                <pre><code>composer require pragmarx/google2fa-laravel</code></pre>
+                <p><strong>Flujo:</strong></p>
+                <ol>
+                    <li>Admin activa 2FA en perfil</li>
+                    <li>Sistema genera código QR (Google Authenticator)</li>
+                    <li>Admin escanea QR con app móvil</li>
+                    <li>Al login siguiente, pide código 6 dígitos</li>
+                </ol>
+                <p><strong>Tabla migración:</strong></p>
+                <pre><code>Schema::table('usuarios', function (Blueprint $table) {
+    $table->text('google2fa_secret')->nullable();
+    $table->boolean('google2fa_enabled')->default(false);
+});</code></pre>
+            </div>
+            
+            <div class="box box-danger">
+                <h4>4. 📋 AUDIT LOGS - CAMBIOS CRÍTICOS</h4>
+                <p><strong>Crear tabla:</strong></p>
+                <pre><code>Schema::create('audit_logs', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('usuario_id');
+    $table->string('entidad'); // 'usuario', 'ticket', 'rol'
+    $table->unsignedBigInteger('entidad_id');
+    $table->string('accion'); // 'crear', 'editar', 'eliminar', 'cambiar_rol'
+    $table->json('cambios'); // qué cambió
+    $table->json('valores_anteriores'); // antes/después
+    $table->string('ip_address');
+    $table->string('user_agent');
+    $table->timestamps();
+});
+</code></pre>
+                <p><strong>Qué registrar:</strong></p>
+                <ul>
+                    <li>Cambio de rol de usuario</li>
+                    <li>Eliminación de usuario/ticket</li>
+                    <li>Cambio de prioridad crítica</li>
+                    <li>Asignación de técnico</li>
+                    <li>Acceso admin a tickets de usuario</li>
+                </ul>
+                <pre><code>// Helper para registrar
+AuditLog::log('usuario', $usuario->id, 'cambiar_rol', [
+    'anterior' => 'Técnico',
+    'nuevo' => 'Admin'
+]);</code></pre>
+            </div>
+        </section>
+        
+        <!-- SECCIÓN 14: FASE 4 - CARACTERÍSTICAS NUEVAS -->
+        <section id="seccion14">
+            <h2>14. ✨ MEJORAS FASE 4 (CARACTERÍSTICAS NUEVAS)</h2>
+            
+            <div class="box box-success">
+                <h4>1. 📧 NOTIFICACIONES POR EMAIL</h4>
+                <p><strong>Eventos que disparan email:</strong></p>
+                <ul>
+                    <li>✉️ Cuando se CREA un ticket (al usuario + admin)</li>
+                    <li>✉️ Cuando se ASIGNA técnico (al técnico)</li>
+                    <li>✉️ Cuando cambia de ESTADO (al usuario + técnico)</li>
+                    <li>✉️ Cuando agregan COMENTARIO (notificar interesados)</li>
+                    <li>✉️ Cuando se CIERRA ticket (al usuario)</li>
+                </ul>
+                <p><strong>Implementación con Mailable:</strong></p>
+                <pre><code>php artisan make:mail TicketCreatedMail
+
+// En TicketObserver
+static::created(function ($ticket) {
+    Mail::to($ticket->usuario->email)->send(
+        new TicketCreatedMail($ticket)
+    );
+    Mail::to('admin@uptex.edu.mx')->send(
+        new TicketCreatedMail($ticket)
+    );
+});</code></pre>
+                <p><strong>Con colas (Async):</strong></p>
+                <pre><code>Mail::to($ticket->usuario->email)->queue(
+    new TicketCreatedMail($ticket)
+);</code></pre>
+            </div>
+            
+            <div class="box box-success">
+                <h4>2. 📄 EXPORTACIÓN A PDF</h4>
+                <p><strong>Librería:</strong> TCPDF o mPDF</p>
+                <pre><code>composer require barryvdh/laravel-dompdf</code></pre>
+                <p><strong>Rutas nuevas:</strong></p>
+                <pre><code>GET /reportes/pdf/por-fecha     → PDF de reportes
+GET /tickets/{id}/pdf           → Ticket completo en PDF
+GET /reportes/pdf/resumen       → Resumen mensual</code></pre>
+                <p><strong>Ejemplo:</strong></p>
+                <pre><code>public function exportPDF($id)
+{
+    $ticket = Ticket::with('comentarios')->find($id);
+    $pdf = PDF::loadView('pdf.ticket', ['ticket' => $ticket]);
+    return $pdf->download("Ticket_{$id}.pdf");
+}</code></pre>
+            </div>
+            
+            <div class="box box-success">
+                <h4>3. 📊 DASHBOARD INTERACTIVO CON GRÁFICOS</h4>
+                <p><strong>Librería:</strong> Chart.js o ApexCharts</p>
+                <pre><code>npm install apexcharts</code></pre>
+                <p><strong>Gráficos en Dashboard:</strong></p>
+                <ul>
+                    <li>📈 Tickets por mes (línea)</li>
+                    <li>🥧 Tickets por estado (dona)</li>
+                    <li>⭐ Prioridad distribution (barras)</li>
+                    <li>👥 Carga por técnico (barras horizontales)</li>
+                    <li>📊 Tiempo promedio de resolución</li>
+                    <li>🎯 SLA compliance (% tickets cerrados a tiempo)</li>
+                </ul>
+                <p><strong>En AdminDashboardController:</strong></p>
+                <pre><code>$ticketsPorMes = Ticket::selectRaw(
+    'DATE_FORMAT(fecha_creacion, "%Y-%m") as mes, COUNT(*) as cantidad'
+)->groupBy('mes')->get();
+
+$estadisticas = [
+    'grafico_mes' => $ticketsPorMes,
+    'total_abiertos' => Ticket::where('estado_id', 1)->count(),
+    'promedio_tiempo' => Ticket::whereNotNull('fecha_cierre')
+        ->selectRaw('AVG(DATEDIFF(fecha_cierre, fecha_creacion)) as promedio')
+        ->first()
+];</code></pre>
+            </div>
+        </section>
+        
+        
+        <!-- SECCIÓN 15: PLAN FINAL DE IMPLEMENTACIÓN -->
+        <section id="seccion15">
+            <h2>15. 📅 PLAN FINAL DE IMPLEMENTACIÓN</h2>
+            
+            <h3>TIMELINE TOTAL: 35-45 DÍAS (Versión Completa con todas las fases)</h3>
+            
+            <div class="box box-success">
+                <h4>📊 Desglose por Fase:</h4>
+                <ul>
+                    <li><strong>FASE 1 (Limpieza):</strong> 2-3 días</li>
+                    <li><strong>FASE 2 (UX/UI):</strong> 5-7 días</li>
+                    <li><strong>FASE 2B (Optimizaciones):</strong> 4-5 días</li>
+                    <li><strong>FASE 3 (Seguridad):</strong> 6-8 días</li>
+                    <li><strong>FASE 4 (Características):</strong> 8-10 días</li>
+                    <li><strong>FASE 5 (Testing):</strong> 5-7 días</li>
+                    <li><strong>Deploy Final:</strong> 2-3 días</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 1: LIMPIEZA (2-3 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Día 1:</h4>
+                <ul>
+                    <li>Eliminar User.php</li>
+                    <li>Crear migración drop_users_table</li>
+                    <li>Remover variable token no usada</li>
+                    <li>Crear FormRequests centralizados</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 2: UX/UI (5-7 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Días 1-7: Implementar todas las mejoras visuales</h4>
+                <ul>
+                    <li>Colorear filas de tickets por prioridad (Rojo/Naranja/Amarillo/Verde)</li>
+                    <li>Mejorar UI de comentarios (visible por rol)</li>
+                    <li>Agregar refresh automático AJAX</li>
+                    <li>Implementar indicadores de "NUEVO"</li>
+                    <li>Bloquear campos que no se pueden editar</li>
+                    <li>Testing de UI</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 2B: OPTIMIZACIONES (4-5 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Todos los optimizadores de performance</h4>
+                <ul>
+                    <li>Caché de catálogos</li>
+                    <li>Eager loading optimizado</li>
+                    <li>Paginación en listas</li>
+                    <li>Índices en BD</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 3: SEGURIDAD (6-8 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Medidas de seguridad enterprise</h4>
+                <ul>
+                    <li>Rate Limiting en login</li>
+                    <li>Captcha en registro</li>
+                    <li>2FA para administradores</li>
+                    <li>Audit logs para cambios críticos</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 4: CARACTERÍSTICAS NUEVAS (8-10 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Funcionalidades avanzadas</h4>
+                <ul>
+                    <li>Notificaciones por email</li>
+                    <li>Exportación a PDF</li>
+                    <li>Dashboard con gráficos interactivos</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 5: TESTING (5-7 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Pruebas exhaustivas</h4>
+                <ul>
+                    <li>Testing de seguridad</li>
+                    <li>Testing de permisos</li>
+                    <li>Testing de performance</li>
+                    <li>Testing end-to-end</li>
+                    <li>Testing móvil/responsive</li>
+                </ul>
+            </div>
+            
+            <h3>FASE 6: DEPLOY FINAL (2-3 DÍAS)</h3>
+            <div class="box box-success">
+                <h4>Lanzamiento en Hostinger</h4>
+                <ul>
+                    <li>Ejecutar migraciones</li>
+                    <li>Compilar assets</li>
+                    <li>Deploy de código</li>
+                    <li>Monitoreo en vivo</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- SECCIÓN 16: NUEVOS REQUERIMIENTOS UPTEX -->
+        <section id="seccion16">
+            <h2>16. 📋 NUEVOS REQUERIMIENTOS UPTEX DETALLADOS</h2>
+            
+            <div class="box box-info">
+                <h4>1. Reporte Escrito + Dates</h4>
+                <p>✅ Ya existen: fecha_creacion, fecha_cierre</p>
+                <p>✅ Nueva columna: reporte_final (texto largo)</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>2. ELIMINAR Área "Sistemas"</h4>
+                <p><strong>Actual:</strong> Rectoría, Admin, Finanzas, Docencia, Sistemas</p>
+                <p><strong>Nuevo:</strong> Solo Rectoría, Admin y Finanzas, Docencia</p>
+                <p><strong>Acción:</strong> Actualizar seeders</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>3. Contraseña Maestra</h4>
+                <p><strong>Nueva ruta:</strong> POST /api/admin/cambiar-password/{usuario_id}</p>
+                <p><strong>Validación:</strong> Solo Admin + contraseña master</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>4. Límite Cambios Password</h4>
+                <p><strong>Máximo:</strong> 3 cambios por mes calendarios</p>
+                <p><strong>Control:</strong> Columna usuarios.cambios_password_mes</p>
+                <p><strong>Reset:</strong> Automático 1ro de mes</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>5. Duplicar Reportes</h4>
+                <p>GET /api/reportes/tickets (existente)</p>
+                <p>GET /api/reportes/tickets-por-titulo (nuevo)</p>
+                <p>GET /api/reportes/por-usuario (nuevo)</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>6. Acceso a Panel Técnico</h4>
+                <p>Mostrar tickets de todos los técnicos</p>
+                <p>Ver asignaciones</p>
+            </div>
+            
+            <h4>Nueva Funcionalidad:</h4>
+            <ul>
+                <li><strong>Columna:</strong> reporte_final (editable por técnico)</li>
+                <li><strong>Columna:</strong> quien_atendio (auto-filled)</li>
+                <li><strong>Tabla:</strong> audit_logs (para cambios críticos)</li>
+            </ul>
+            
+            <hr>
+            
+            <h3>TÉCNICO - CAMBIOS:</h3>
+            
+            <div class="box box-info">
+                <h4>1. ❌ Quitar Botón "Editar"</h4>
+                <p>Remover ruta PUT /tickets/{id} para técnico</p>
+                <p>Mantener: Ver, Comentar, Cambiar Estado</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>2. Descripción BLOQUEADA</h4>
+                <pre><code>&lt;input type="text" name="descripcion" disabled&gt;
+&lt;!-- O --&gt;
+&lt;p class="form-control-plaintext"&gt;{{ $ticket->descripcion }}&lt;/p&gt;</code></pre>
+            </div>
+            
+            <div class="box box-info">
+                <h4>3. ✅ Recuperar Contraseña</h4>
+                <p>POST /api/auth/forgot-password</p>
+                <p>POST /api/auth/reset-password/{token}</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>4. Cambios Password: 3/mes</h4>
+                <p>Validar: usuarios.cambios_password_mes <= 2</p>
+                <p>Incrementar al cambiar</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>5. Áreas Seguras</h4>
+                <p><strong>Restricción:</strong> Ver solo tickets de su área</p>
+                <p><strong>Implementar:</strong> Middleware validador de área</p>
+            </div>
+            
+            <div class="box box-info">
+                <h4>6. Qué es un Ticket NUEVO:</h4>
+                <pre><code>// En controller - cuando técnico abre ticket:
+$ticket->update(['leido_por_tecnico' => now()]);
+
+// En vista - mostrar indicador:
+@if (!$ticket->leido_por_tecnico)
+    &lt;span class="badge badge-danger"&gt;NUEVO&lt;/span&gt;
+@endif</code></pre>
+            </div>
+            
+            <hr>
+            
+            <h3>USUARIO NORMAL - CAMBIOS:</h3>
+            
+            <div class="box box-warning">
+                <h4>1. ❌ QUITAR: Prioridad</h4>
+                <pre><code>// ANTES:
+'prioridad_id' => 'required|exists:prioridades,id_prioridad'
+
+// DESPUÉS:
+// Línea eliminada - Admin elige prioridad</code></pre>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>2. ❌ QUITAR: Asistente IA</h4>
+                <p>Eliminar cualquier referencia</p>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>3. ✅ MEJORAR: Comentarios (filtrados por rol)</h4>
+                <p><strong>CAMBIO DE REQUERIMIENTO:</strong> Los comentarios NO se quitan</p>
+                <p><strong>Nuevo:</strong> Los comentarios se mantienen pero MEJORADOS con filtrado por rol</p>
+                <p><strong>Visibilidad según rol:</strong></p>
+                <ul>
+                    <li>✅ <strong>Admin:</strong> Ve todos los comentarios del ticket</li>
+                    <li>✅ <strong>Técnico:</strong> Ve todos los comentarios del ticket (puede agregar)</li>
+                    <li>✅ <strong>Usuario:</strong> Ve SOLO sus propios comentarios + respuestas del técnico</li>
+                </ul>
+                <p><strong>Implementación:</strong> Filtrar comentarios por rol en controlador</p>
+                <pre><code>// En TicketController->show()
+$comentarios = $ticket->comentarios()
+    ->when(Auth::user()->esUsuarioNormal(), function($query) {
+        // Usuario solo ve sus comentarios y respuestas del técnico
+        return $query->where('id_usuario', Auth::id())
+                     ->orWhereHas('usuario', fn($q) => $q->where('id_rol', 2));
+    })
+    ->get();</code></pre>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>4. ✅ Área AUTO-FILL</h4>
+                <pre><code>// En create():
+'area_id' => Auth::user()->area_id // Auto-fill
+
+// En form:
+&lt;input type="hidden" name="area_id" value="{{ Auth::user()->area_id }}"&gt;</code></pre>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>5. Cambios Password: 3/mes</h4>
+                <p>Validar contador</p>
+                <p>Mensaje: "Ha usado 2 de 3 cambios este mes"</p>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>6. ✅ NUEVA: Encuestas de Satisfacción</h4>
+                <p>Nueva tabla: encuestas</p>
+                <p>Campos: usuario_id, ticket_id, calificacion (1-5), comentarios</p>
+                <p>Mostrar al cerrar ticket</p>
+        
+        <!-- SECCIÓN 17: PLAN DE TRABAJO COLABORATIVO -->
+        <section id="seccion17">
+            <h2>17. 👥 PLAN DE TRABAJO COLABORATIVO POR ROLES</h2>
+            
+            <div class="box box-info">
+                <p><strong>Idea:</strong> Dividir el desarrollo en 3 colaboradores según los módulos (roles)</p>
+                <p><strong>Ventaja:</strong> Trabajo paralelo, especialización, responsabilidad clara</p>
+                <p><strong>Metodología:</strong> Cada colaborador maneja su módulo en todas las fases</p>
+                <p><strong>Coordinación:</strong> Reunión diaria 15 min para sincronizar (BD, API, dependencias)</p>
+            </div>
+            
+            <hr>
+            
+            <h3>👤 COLABORADOR 1: MÓDULO USUARIO (Usuario Normal)</h3>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4;">
+                <h4>Responsabilidades Principales:</h4>
+                <ul>
+                    <li>✅ Frontend del usuario normal (vistas, interfaz)</li>
+                    <li>✅ Funcionalidades de usuario (crear ticket, ver estado)</li>
+                    <li>✅ Encuestas de satisfacción</li>
+                    <li>✅ Comentarios filtrados (solo los suyos + respuestas técnico)</li>
+                    <li>✅ Dashboard de usuario</li>
+                    <li>✅ Cambio de contraseña (máx 3/mes)</li>
+                </ul>
+            </div>
+            
+            <h4>📋 TAREAS POR FASE:</h4>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 1: LIMPIEZA</h4>
+                <p><strong>Duración:</strong> 1 día | <strong>Prioridad:</strong> ⭐ Crítica</p>
+                <ul>
+                    <li>❌ Remover campo prioridad de formulario crear ticket</li>
+                    <li>❌ Remover referencias a "Asistente IA"</li>
+                    <li>✅ Crear Form Request centralizado para crear ticket</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Requests/StoreTicketRequest.php, resources/views/tickets/create.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 2: UX/UI</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐ Alta</p>
+                <ul>
+                    <li>🎨 Colorear tickets por prioridad en lista usuario</li>
+                    <li>💬 Mejorar interfaz de comentarios (mostrar solo los suyos)</li>
+                    <li>🔄 Implementar refresh automático en mis-tickets</li>
+                    <li>📌 Pre-llenar área automáticamente</li>
+                    <li>✅ Verificar responsive en móvil</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> resources/views/tickets/mis-tickets.blade.php, resources/css/app.css</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 2B: OPTIMIZACIONES</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐ Baja</p>
+                <ul>
+                    <li>📖 Agregar paginación (15 tickets por página)</li>
+                    <li>🚀 Implementar eager loading en TicketController</li>
+                    <li>💾 Validar que caché de catálogos funcione</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Controllers/Web/TicketWebController.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 3: SEGURIDAD</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐⭐⭐ Crítica</p>
+                <ul>
+                    <li>🔐 Integrar Captcha en formulario de registro</li>
+                    <li>🔑 Implementar validación de cambios password (3/mes)</li>
+                    <li>⏰ Mostrar contador de cambios disponibles</li>
+                    <li>❌ Bloquear si alcanza límite</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Controllers/Api/AuthController.php, resources/views/auth/register.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 4: CARACTERÍSTICAS NUEVAS</h4>
+                <p><strong>Duración:</strong> 4 días | <strong>Prioridad:</strong> ⭐⭐ Media</p>
+                <ul>
+                    <li>📧 Configurar email notifications (ticket creado)</li>
+                    <li>📄 Crear vista PDF para ticket del usuario</li>
+                    <li>⭐ Crear formulario de encuestas de satisfacción</li>
+                    <li>📊 Tabla encuestas en BD</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Models/Encuesta.php, resources/views/encuestas/create.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #22c55e; background: #f0fdf4; margin: 15px 0;">
+                <h4>FASE 5: TESTING</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐⭐⭐ Crítica</p>
+                <ul>
+                    <li>🧪 Testing de flujo usuario (crear ticket → ver → encuesta)</li>
+                    <li>🧪 Testing de permisos (no ver tickets otros usuarios)</li>
+                    <li>🧪 Testing en móvil</li>
+                </ul>
+            </div>
+            
+            <p><strong style="color: #10b981;">⏱️ TOTAL USUARIO: 14 días</strong></p>
+            
+            <hr>
+            
+            <h3>🔧 COLABORADOR 2: MÓDULO TÉCNICO (Técnico)</h3>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0;">
+                <h4>Responsabilidades Principales:</h4>
+                <ul>
+                    <li>✅ Frontend del técnico (vistas, interfaz)</li>
+                    <li>✅ Gestión de tickets asignados</li>
+                    <li>✅ Cambio de estado de tickets</li>
+                    <li>✅ Comentarios mejorados (agregar/ver todos)</li>
+                    <li>✅ Descripción bloqueada (no editar)</li>
+                    <li>✅ Indicador de "NUEVO" ticket</li>
+                    <li>✅ Dashboard técnico</li>
+                    <li>✅ Historial de tickets cerrados</li>
+                </ul>
+            </div>
+            
+            <h4>📋 TAREAS POR FASE:</h4>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 1: LIMPIEZA</h4>
+                <p><strong>Duración:</strong> 1 día | <strong>Prioridad:</strong> ⭐ Crítica</p>
+                <ul>
+                    <li>❌ Quitar botón "Editar" de ticket</li>
+                    <li>🔒 Bloquear campo descripción (disabled)</li>
+                    <li>✅ Crear Form Request para cambio de estado</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Requests/UpdateTicketStateRequest.php, resources/views/tickets/show.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 2: UX/UI</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐ Alta</p>
+                <ul>
+                    <li>🎨 Colorear tickets por prioridad (crítica en ROJO)</li>
+                    <li>💬 Renovar interfaz de comentarios (timestamps, mejor UI)</li>
+                    <li>🔄 Implementar refresh automático de tickets asignados</li>
+                    <li>✅ Mostrar indicador "NUEVO" (timestamp leido_por_tecnico)</li>
+                    <li>📌 Pre-seleccionar estado al modificar</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> resources/views/tickets/mis-tickets.blade.php, resources/views/tickets/show.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 2B: OPTIMIZACIONES</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐ Media</p>
+                <ul>
+                    <li>📖 Agregar paginación (15 tickets por página)</li>
+                    <li>🚀 Implementar eager loading (usuario, área, estado, comentarios)</li>
+                    <li>💾 Registrar acceso a ticket (leido_por_tecnico = now())</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Controllers/Web/TicketWebController.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 3: SEGURIDAD</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐⭐ Alta</p>
+                <ul>
+                    <li>🔐 Middleware: ver solo tickets de su área</li>
+                    <li>🔑 Implementar cambios password (máx 3/mes)</li>
+                    <li>📋 Crear audit log cuando modifica ticket</li>
+                    <li>✅ Recuperar contraseña (POST /api/auth/forgot-password)</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Middleware/CheckTecnicoArea.php, app/Models/AuditLog.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 4: CARACTERÍSTICAS NUEVAS</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐ Media</p>
+                <ul>
+                    <li>📧 Email cuando se asigna ticket (notificar al técnico)</li>
+                    <li>📧 Email cuando cambia estado de ticket</li>
+                    <li>📄 Generar PDF de ticket para compartir</li>
+                    <li>✅ Campo reporte_final (completar al cerrar ticket)</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Mail/TicketAssignedMail.php, app/Mail/TicketStatusChangedMail.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #f59e0b; background: #fffbf0; margin: 15px 0;">
+                <h4>FASE 5: TESTING</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐⭐⭐ Crítica</p>
+                <ul>
+                    <li>🧪 Testing de flujo técnico (ver asignados → comentar → cambiar estado)</li>
+                    <li>🧪 Testing de restricciones (no ver tickets de otra área)</li>
+                    <li>🧪 Testing de email notifications</li>
+                </ul>
+            </div>
+            
+            <p><strong style="color: #f59e0b;">⏱️ TOTAL TÉCNICO: 15 días</strong></p>
+            
+            <hr>
+            
+            <h3>👨‍💼 COLABORADOR 3: MÓDULO ADMINISTRADOR (Admin)</h3>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff;">
+                <h4>Responsabilidades Principales:</h4>
+                <ul>
+                    <li>✅ Frontend del administrador (vistas, tableros)</li>
+                    <li>✅ Gestión de usuarios (CRUD)</li>
+                    <li>✅ Gestión de tickets (todos, sin filtros)</li>
+                    <li>✅ Asignación de técnicos</li>
+                    <li>✅ Reportes avanzados</li>
+                    <li>✅ Dashboard analytics con gráficos</li>
+                    <li>✅ Audit logs y seguridad</li>
+                    <li>✅ 2FA setup</li>
+                </ul>
+            </div>
+            
+            <h4>📋 TAREAS POR FASE:</h4>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 1: LIMPIEZA</h4>
+                <p><strong>Duración:</strong> 1 día | <strong>Prioridad:</strong> ⭐ Crítica</p>
+                <ul>
+                    <li>❌ Eliminar User.php model</li>
+                    <li>🗑️ Crear migration drop_users_table</li>
+                    <li>✅ Centralizar validaciones en FormRequests</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> Eliminar app/Models/User.php, database/migrations/drop_users_table.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 2: UX/UI</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐ Alta</p>
+                <ul>
+                    <li>🎨 Colorear tickets por prioridad (vista admin)</li>
+                    <li>💬 Mejorar comentarios (ver todos, interfaz premium)</li>
+                    <li>🔄 Refresh automático en lista de tickets</li>
+                    <li>📋 Ver panel técnico integrado</li>
+                    <li>✅ Diseño asimétrico del dashboard</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> resources/views/admin/dashboard.blade.php, resources/views/tickets/index.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 2B: OPTIMIZACIONES</h4>
+                <p><strong>Duración:</strong> 2 días | <strong>Prioridad:</strong> ⭐⭐ Media</p>
+                <ul>
+                    <li>💾 Implementar caché para catálogos (roles, áreas, estados)</li>
+                    <li>🚀 Eager loading optimizado para reportes</li>
+                    <li>📖 Paginación en usuarios y tickets (50 por página)</li>
+                    <li>🗂️ Validar índices en BD</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Controllers/Web/UsuarioWebController.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 3: SEGURIDAD</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐⭐ CRÍTICA</p>
+                <ul>
+                    <li>⏰ Rate Limiting: máx 3 intentos login = bloqueo 15 min</li>
+                    <li>🔐 Implementar 2FA (Google Authenticator)</li>
+                    <li>📋 Crear tabla audit_logs</li>
+                    <li>📝 Logging: cambios de rol, eliminaciones, asignaciones críticas</li>
+                    <li>🔑 Contraseña maestra para cambiar password otros usuarios</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Models/AuditLog.php, app/Http/Controllers/Api/AuthController.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 4: CARACTERÍSTICAS NUEVAS</h4>
+                <p><strong>Duración:</strong> 5 días | <strong>Prioridad:</strong> ⭐⭐ Media</p>
+                <ul>
+                    <li>📧 Email notifications (ticket creado, asignado, cambio estado)</li>
+                    <li>📄 Exportación PDF de reportes</li>
+                    <li>📊 Dashboard analytics con 6 gráficos (Chart.js/ApexCharts):</li>
+                    <ul style="margin-left: 20px;">
+                        <li>📈 Tickets por mes</li>
+                        <li>🥧 Tickets por estado</li>
+                        <li>⭐ Distribución de prioridad</li>
+                        <li>👥 Carga por técnico</li>
+                        <li>⏱️ Tiempo promedio resolución</li>
+                        <li>🎯 SLA compliance %</li>
+                    </ul>
+                    <li>📋 Reportes duplicados (por titulo, por usuario)</li>
+                    <li>✅ ELIMINAR área "Sistemas" (actualizar seeders)</li>
+                </ul>
+                <p><strong>Archivos clave:</strong> app/Http/Controllers/Web/ReporteWebController.php, resources/views/admin/analytics.blade.php</p>
+            </div>
+            
+            <div class="box" style="border-left: 4px solid #3b82f6; background: #eff6ff; margin: 15px 0;">
+                <h4>FASE 5: TESTING</h4>
+                <p><strong>Duración:</strong> 3 días | <strong>Prioridad:</strong> ⭐⭐⭐ CRÍTICA</p>
+                <ul>
+                    <li>🧪 Testing de seguridad (Rate limit, 2FA, audit logs)</li>
+                    <li>🧪 Testing de permisos (acceso total sin restricciones)</li>
+                    <li>🧪 Testing de reportes (datos correctos)</li>
+                    <li>🧪 Testing de gráficos (rendimiento, datos)</li>
+                </ul>
+            </div>
+            
+            <p><strong style="color: #3b82f6;">⏱️ TOTAL ADMINISTRADOR: 17 días</strong></p>
+            
+            <hr>
+            
+            <h3>📅 CRONOGRAMA COLABORATIVO</h3>
+            
+            <table>
+                <tr>
+                    <th>Fase</th>
+                    <th>Usuario</th>
+                    <th>Técnico</th>
+                    <th>Admin</th>
+                    <th>Duración Total</th>
+                </tr>
+                <tr>
+                    <td><strong>FASE 1: Limpieza</strong></td>
+                    <td>1 día</td>
+                    <td>1 día</td>
+                    <td>1 día</td>
+                    <td>⏱️ 1 día (paralelo)</td>
+                </tr>
+                <tr>
+                    <td><strong>FASE 2: UX/UI</strong></td>
+                    <td>3 días</td>
+                    <td>3 días</td>
+                    <td>3 días</td>
+                    <td>⏱️ 3 días (paralelo)</td>
+                </tr>
+                <tr>
+                    <td><strong>FASE 2B: Optimizaciones</strong></td>
+                    <td>2 días</td>
+                    <td>2 días</td>
+                    <td>2 días</td>
+                    <td>⏱️ 2 días (paralelo)</td>
+                </tr>
+                <tr>
+                    <td><strong>FASE 3: Seguridad</strong></td>
+                    <td>2 días</td>
+                    <td>2 días</td>
+                    <td>3 días</td>
+                    <td>⏱️ 3 días (paralelo)</td>
+                </tr>
+                <tr>
+                    <td><strong>FASE 4: Features</strong></td>
+                    <td>4 días</td>
+                    <td>3 días</td>
+                    <td>5 días</td>
+                    <td>⏱️ 5 días (paralelo)</td>
+                </tr>
+                <tr>
+                    <td><strong>FASE 5: Testing</strong></td>
+                    <td>2 días</td>
+                    <td>2 días</td>
+                    <td>3 días</td>
+                    <td>⏱️ 3 días (paralelo)</td>
+                </tr>
+                <tr style="background: #f0f4ff; font-weight: bold;">
+                    <td><strong>TOTAL PARALELO</strong></td>
+                    <td>14 días</td>
+                    <td>15 días</td>
+                    <td>17 días</td>
+                    <td>⏱️ <strong>17 DÍAS</strong></td>
+                </tr>
+                <tr style="background: #dcfce7; font-weight: bold;">
+                    <td colspan="4" style="text-align: center;"><strong>✅ DEPLOY FINAL: 2-3 días más</strong></td>
+                    <td><strong>20 DÍAS TOTAL</strong></td>
+                </tr>
+            </table>
+            
+            <h3>🎯 VENTAJAS DEL TRABAJO COLABORATIVO:</h3>
+            <ul>
+                <li>✅ <strong>Paralelismo:</strong> 3 personas trabajando simultáneamente = 17 días en lugar de 51</li>
+                <li>✅ <strong>Especialización:</strong> Cada uno domina su módulo</li>
+                <li>✅ <strong>Responsabilidad:</strong> Claro quién hace qué</li>
+                <li>✅ <strong>Sincronización:</strong> Reunión diaria 15 min</li>
+                <li>✅ <strong>Testing paralelo:</strong> Cada uno testa su módulo</li>
+                <li>✅ <strong>Menos conflictos:</strong> Áreas de código separadas</li>
+            </ul>
+            
+            <h3>� GIT & GITHUB WORKFLOW (3 Colaboradores):</h3>
+            
+            <div class="box box-info">
+                <h4>📌 Estrategia de Branching:</h4>
+                <ul>
+                    <li><strong>main:</strong> Código de producción (deployable)</li>
+                    <li><strong>develop:</strong> Rama integración (siempre estable)</li>
+                    <li><strong>feature/usuario-*:</strong> Ramas del Colaborador 1</li>
+                    <li><strong>feature/tecnico-*:</strong> Ramas del Colaborador 2</li>
+                    <li><strong>feature/admin-*:</strong> Ramas del Colaborador 3</li>
+                </ul>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>💾 Commits por tarea:</h4>
+                <ul>
+                    <li>✅ <strong>Formato:</strong> <code>git commit -m "feat(usuario): quitar prioridad y asistente IA"</code></li>
+                    <li>✅ <strong>Prefijos:</strong> feat, fix, refactor, chore, docs, style</li>
+                    <li>✅ <strong>Frecuencia:</strong> 1 commit por tarea completada</li>
+                    <li>✅ <strong>Mensajes descriptivos:</strong> Qué cambió y por qué</li>
+                </ul>
+                <pre><code>git add .
+git commit -m "feat(usuario): remover selector de prioridad en formulario"
+git push origin feature/usuario-limpieza</code></pre>
+            </div>
+            
+            <div class="box box-success">
+                <h4>🔄 Flujo de Pull Requests (PR):</h4>
+                <ol>
+                    <li>Crear rama: <code>git checkout -b feature/usuario-fase1</code></li>
+                    <li>Hacer commits: <code>git commit -m "..."</code></li>
+                    <li>Push a GitHub: <code>git push origin feature/usuario-fase1</code></li>
+                    <li>Abrir PR en GitHub (feature/usuario-* → develop)</li>
+                    <li>✅ <strong>Descripción del PR:</strong>
+                        <ul style="margin-left: 20px;">
+                            <li>Qué cambios hace</li>
+                            <li>Fase completada</li>
+                            <li>Testing realizado</li>
+                            <li>Dependencias (si aplica)</li>
+                        </ul>
+                    </li>
+                    <li>Code review por otros colaboradores (5-10 min)</li>
+                    <li>✅ Approve y Merge a develop</li>
+                </ol>
+            </div>
+            
+            <div class="box box-danger">
+                <h4>⚠️ Órdenes de Merge (IMPORTANTE):</h4>
+                <ul>
+                    <li>🚨 <strong>PRIMERO:</strong> feature/admin-* → develop (cambios de BD)</li>
+                    <li>⏳ <strong>SEGUNDO:</strong> feature/usuario-* y feature/tecnico-* → develop (paralelo, sin orden)</li>
+                    <li>✅ <strong>VALIDACIÓN:</strong> Después de cada merge, ejecutar en develop:
+                        <ul style="margin-left: 20px;">
+                            <li><code>php artisan migrate</code></li>
+                            <li><code>php artisan cache:clear</code></li>
+                            <li><code>npm run dev</code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="box box-info">
+                <h4>📅 Ciclo por Fase:</h4>
+                <pre><code>DÍA 1 (FASE 1): 
+├─ Colaborador 1: feature/usuario-limpieza
+├─ Colaborador 2: feature/tecnico-limpieza  
+└─ Colaborador 3: feature/admin-limpieza
+   └─ Merge a develop (Admin primero)
+   └─ Merge Colaboradores 1,2 a develop
+
+DÍA 2-5 (FASE 2):
+├─ Colaborador 1: feature/usuario-ux → develop
+├─ Colaborador 2: feature/tecnico-ux → develop
+└─ Colaborador 3: feature/admin-ux → develop
+
+... continuar por cada fase ...</code></pre>
+            </div>
+            
+            <div class="box box-success">
+                <h4>🚀 Deploy a Hostinger (desde main):</h4>
+                <ol>
+                    <li>Todos los PRs merged a develop</li>
+                    <li>Hacer release: <code>git tag -a v1.1.0 -m "Release con todas las fases"</code></li>
+                    <li><code>git push origin v1.1.0</code></li>
+                    <li>Merge develop → main: <code>git checkout main && git merge develop</code></li>
+                    <li><code>git push origin main</code></li>
+                    <li>SSH a Hostinger y hacer pull: <code>git pull origin main</code></li>
+                    <li>Ejecutar migraciones y compilar assets</li>
+                </ol>
+            </div>
+            
+            <div class="box box-warning">
+                <h4>🔐 Reglas GitHub (OBLIGATORIO):</h4>
+                <ul>
+                    <li>✅ <strong>Protección de main:</strong> No pushear directo, solo PRs</li>
+                    <li>✅ <strong>Protección de develop:</strong> Requerir 1 approval antes de merge</li>
+                    <li>✅ <strong>Status checks:</strong> Tests pasen antes de merge</li>
+                    <li>✅ <strong>Auto-delete branches:</strong> Eliminar rama después de merge</li>
+                </ul>
+            </div>
+            
+            <h3>📊 Ejemplo de Commits Real:</h3>
+            <pre><code>COLABORADOR 1 (Usuario):
+commit 1: "chore(user): remove prioridad field from store request"
+commit 2: "refactor(user): remove AI assistant references"
+commit 3: "feat(user): implement color priority in views"
+commit 4: "feat(user): add password change counter (3/month)"
+git push origin feature/usuario-fase1-fase2
+→ PR a develop → Merge ✅
+
+COLABORADOR 2 (Técnico):
+commit 1: "chore(tecnico): remove edit button from tickets"
+commit 2: "feat(tecnico): block descripcion field"
+commit 3: "feat(tecnico): add nuevo indicator with timestamps"
+commit 4: "feat(tecnico): implement comment filtering by role"
+git push origin feature/tecnico-fase1-fase2
+→ PR a develop → Merge ✅
+
+COLABORADOR 3 (Admin):
+commit 1: "chore(admin): delete User.php duplicate model"
+commit 2: "chore(admin): create migration for drop_users_table"
+commit 3: "feat(admin): implement cache for catalogs"
+commit 4: "feat(admin): add rate limiting on login"
+git push origin feature/admin-fase1-fase2-fase3
+→ PR a develop → Merge ✅</code></pre>
+            
+            <h3>�💬 REUNIONES DIARIAS (15 MINUTOS):</h3>
+            <ul>
+                <li>🕐 <strong>Hora:</strong> 10:00 AM</li>
+                <li>📍 <strong>Tema:</strong> Status de cada módulo, bugs encontrados, dependencias</li>
+                <li>✅ <strong>Checklist:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>¿Qué completé ayer?</li>
+                        <li>¿Qué hago hoy?</li>
+                        <li>¿Qué me bloquea?</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h3>🔄 PUNTOS DE INTEGRACIÓN CRÍTICOS:</h3>
+            <table>
+                <tr>
+                    <th>Punto de Integración</th>
+                    <th>Coordinado por</th>
+                    <th>Cuándo</th>
+                </tr>
+                <tr>
+                    <td>Migración de BD (columnas nuevas)</td>
+                    <td>Admin</td>
+                    <td>Final Fase 2B</td>
+                </tr>
+                <tr>
+                    <td>Caché de catálogos</td>
+                    <td>Admin</td>
+                    <td>Fase 2B</td>
+                </tr>
+                <tr>
+                    <td>Eager loading optimizado</td>
+                    <td>Admin coordina</td>
+                    <td>Fase 2B</td>
+                </tr>
+                <tr>
+                    <td>Email notifications</td>
+                    <td>Admin (setup) + todos (integración)</td>
+                    <td>Fase 4</td>
+                </tr>
+                <tr>
+                    <td>Audit logs</td>
+                    <td>Admin (tabla) + Técnico (registros)</td>
+                    <td>Fase 3</td>
+                </tr>
+                <tr>
+                    <td>Rate limiting en login</td>
+                    <td>Admin (backend) + todos (testing)</td>
+                    <td>Fase 3</td>
+                </tr>
+            </table>
+        </section>
+        
+        <!-- FOOTER -->
+        <footer style="border-top: 2px solid #2563eb; margin-top: 40px; padding-top: 20px; text-align: center; color: #999;">
+            <p><strong>Documento Versión:</strong> 2.3 - CON WORKFLOW GIT/GITHUB INCLUIDO</p>
+            <p><strong>Última Actualización:</strong> 14 de febrero de 2026</p>
+            <p><strong>Estado:</strong> ✅ Completo: Plan colaborativo + Git workflow (3 colaboradores - 20 días + deploy)</p>
+        </footer>
+    </div>
+</body>
+</html>
