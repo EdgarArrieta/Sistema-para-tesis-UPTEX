@@ -187,7 +187,7 @@
             
             <!-- RIGHT SIDE -->
             <div class="col-lg-7 login-right">
-                <h3>Bienvenido de nuevo</h3>
+                <h3>Bienvenido</h3>
                 <p>Ingresa tus credenciales para continuar</p>
                 
                 @if($errors->any())
