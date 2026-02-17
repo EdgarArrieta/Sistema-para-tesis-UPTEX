@@ -1,277 +1,166 @@
 @extends('layouts.app')
 
-@section('title', 'Ticket #' . $ticket['id_ticket'])
+@section('title', 'Detalle del Ticket #' . $ticket['id_ticket'])
 
 @section('content')
-<div class="row">
-    <!-- HEADER -->
-    <div class="col-12 mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2>
-                    <span class="badge bg-secondary me-2">#{{ $ticket['id_ticket'] }}</span>
-                    {{ $ticket['titulo'] }}
-                </h2>
-                <div class="mt-2">
-                    <span class="badge badge-estado-{{ $ticket['estado']['tipo'] ?? 'abierto' }} fs-6">
-                        {{ $ticket['estado']['nombre'] ?? 'N/A' }}
-                    </span>
-                    <span class="badge badge-prioridad-{{ $ticket['prioridad']['nivel'] ?? 1 }} fs-6 ms-2">
-                        {{ $ticket['prioridad']['nombre'] ?? 'N/A' }}
-                    </span>
-                </div>
-            </div>
-            <div>
-                @if(session('usuario_rol') != 'Usuario Normal')
-                <a href="{{ route('tickets.edit', $ticket['id_ticket']) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Editar
-                </a>
-                @endif
-                <a href="{{ url()->previous() }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver
-                </a>
-            </div>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <span class="badge bg-secondary mb-2">Ticket #{{ $ticket['id_ticket'] }}</span>
+        <h2 class="mb-0 fw-bold">{{ $ticket['titulo'] }}</h2>
     </div>
-    
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="col-lg-8">
-        <!-- INFORMACIÓN DEL TICKET -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Detalles del Ticket</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1"><i class="bi bi-person me-2"></i>Creado por</p>
-                        <p class="fw-semibold">{{ $ticket['usuario']['nombre_completo'] ?? 'N/A' }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1"><i class="bi bi-building me-2"></i>Área</p>
-                        <p class="fw-semibold">{{ $ticket['area']['nombre'] ?? 'N/A' }}</p>
-                    </div>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1"><i class="bi bi-calendar me-2"></i>Fecha de creación</p>
-                        <p class="fw-semibold">{{ \Carbon\Carbon::parse($ticket['fecha_creacion'])->format('d/m/Y H:i') }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1"><i class="bi bi-person-badge me-2"></i>Técnico asignado</p>
-                        <p class="fw-semibold">
-                            @if(isset($ticket['tecnico_asignado']))
-                                {{ $ticket['tecnico_asignado']['nombre_completo'] }}
-                            @else
-                                <span class="text-muted">Sin asignar</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <h6 class="fw-semibold mb-3">Descripción:</h6>
-                <p class="text-muted">{{ $ticket['descripcion'] }}</p>
-                
-                @if(isset($ticket['solucion']))
-                <hr>
-                <div class="alert alert-success">
-                    <h6 class="fw-semibold"><i class="bi bi-check-circle me-2"></i>Solución Aplicada:</h6>
-                    <p class="mb-0">{{ $ticket['solucion'] }}</p>
-                    @if(isset($ticket['fecha_cierre']))
-                    <small class="text-muted d-block mt-2">
-                        Cerrado el {{ \Carbon\Carbon::parse($ticket['fecha_cierre'])->format('d/m/Y H:i') }}
-                    </small>
-                    @endif
-                </div>
-                @endif
-            </div>
-        </div>
-        
-        <!-- COMENTARIOS -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-chat-dots me-2"></i>
-                    Comentarios ({{ count($comentarios ?? []) }})
+    <div class="btn-group shadow-sm">
+        <a href="{{ route('tickets.edit', $ticket['id_ticket']) }}" class="btn btn-warning fw-bold">
+            <i class="bi bi-pencil-square me-1"></i> Editar Gestión
+        </a>
+        <a href="{{ route('tickets.asignados') }}" class="btn btn-secondary fw-bold">
+            <i class="bi bi-arrow-left-circle me-1"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="card-title mb-0 fw-bold text-primary">
+                    <i class="bi bi-info-circle-fill me-2"></i>Detalles del Reporte
                 </h5>
             </div>
             <div class="card-body">
-                <div class="comments-list mb-4">
-                    @forelse($comentarios ?? [] as $comentario)
-                    <div class="comment-item {{ $comentario['usuario']['id_usuario'] == session('usuario_id') ? 'own-comment' : '' }}">
-                        <div class="d-flex gap-3 mb-3">
-                            <div class="comment-avatar">
-                                {{ strtoupper(substr($comentario['usuario']['nombre_completo'] ?? 'U', 0, 1)) }}
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="comment-header mb-2">
-                                    <strong>{{ $comentario['usuario']['nombre_completo'] ?? 'Usuario' }}</strong>
-                                    <span class="text-muted ms-2">
-                                        <i class="bi bi-clock me-1"></i>
-                                        {{ \Carbon\Carbon::parse($comentario['created_at'])->diffForHumans() }}
-                                    </span>
-                                </div>
-                                <div class="comment-body">
-                                    {{ $comentario['contenido'] }}
-                                </div>
-                            </div>
-                        </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase">Creado por:</label>
+                        <p class="fw-bold fs-5">{{ $ticket['usuario']['nombre_completo'] }}</p>
                     </div>
-                    @empty
-                    <p class="text-muted text-center py-4">No hay comentarios aún</p>
-                    @endforelse
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase">Área:</label>
+                        <p class="fw-bold fs-5">{{ $ticket['area']['nombre'] }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase">Fecha de creación:</label>
+                        <p class="fw-bold fs-5">{{ \Carbon\Carbon::parse($ticket['fecha_creacion'])->format('d/m/Y H:i') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase text-primary">Técnico asignado:</label>
+                        <p class="fw-bold fs-5 text-primary">{{ $ticket['tecnico_asignado']['nombre_completo'] ?? 'Sin asignar' }}</p>
+                    </div>
                 </div>
-                
                 <hr>
-                
-                <h6 class="fw-semibold mb-3">Agregar comentario:</h6>
-                <form action="{{ route('tickets.comentarios.store', $ticket['id_ticket']) }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <textarea class="form-control" 
-                                  name="contenido" 
-                                  rows="3" 
-                                  placeholder="Escribe tu comentario aquí..."
-                                  required></textarea>
+                <div class="mt-3">
+                    <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Descripción del problema:</label>
+                    <div class="p-3 bg-light rounded border">
+                        <p class="fs-5 mb-0">{{ $ticket['descripcion'] }}</p>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send me-2"></i>Enviar Comentario
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- SIDEBAR ACCIONES -->
-    <div class="col-lg-4">
-        @if(session('usuario_rol') == 'Administrador' || session('usuario_rol') == 'Técnico')
-        <div class="card mb-3 sticky-top" style="top: 90px;">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Acciones</h5>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="card-title mb-0 fw-bold text-success">
+                    <i class="bi bi-gear-fill me-2"></i>Acciones
+                </h5>
             </div>
-            <div class="card-body">
-                @if(session('usuario_rol') == 'Administrador')
-                <!-- Asignar técnico -->
-                <form action="{{ route('tickets.asignar', $ticket['id_ticket']) }}" method="POST" class="mb-3">
-                    @csrf
-                    <label class="form-label fw-semibold">Asignar técnico:</label>
-                    <div class="input-group">
-                        <select name="tecnico_id" class="form-select" required>
-                            <option value="">Seleccionar...</option>
-                            @foreach($tecnicos ?? [] as $tecnico)
-                            <option value="{{ $tecnico['id_usuario'] }}" 
-                                    {{ isset($ticket['tecnico_asignado']) && $ticket['tecnico_asignado']['id'] == $tecnico['id_usuario'] ? 'selected' : '' }}>
-                                {{ $tecnico['nombre_completo'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check"></i>
-                        </button>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                @if(session('usuario_rol') == 'Técnico')
+                    <div class="mb-4">
+                        <p class="text-muted small mb-2 text-uppercase fw-bold">Estado Actual:</p>
+                        <div class="border rounded py-3 px-4 d-inline-block fw-bold bg-white shadow-sm fs-4 text-primary">
+                            {{ $ticket['estado']['nombre'] }}
+                        </div>
                     </div>
-                </form>
-                @endif
-                
-                <!-- Cambiar estado -->
-                <form action="{{ route('tickets.cambiar-estado', $ticket['id_ticket']) }}" method="POST" class="mb-3">
-                    @csrf
-                    <label class="form-label fw-semibold">Cambiar estado:</label>
-                    <div class="input-group">
-                        <select name="estado_id" class="form-select" required>
-                            @foreach($estados ?? [] as $estado)
-                            <option value="{{ $estado['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $estado['id_estado'] ? 'selected' : '' }}>
-                                {{ $estado['nombre'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-check"></i>
+
+                    <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCerrarTicket">
+                        <i class="bi bi-check-circle-fill me-2"></i>Actualizar Estado
+                    </button>
+                @else
+                    <form action="{{ route('tickets.cambiar-estado', $ticket['id_ticket']) }}" method="POST">
+                        @csrf
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold">Cambiar estado:</label>
+                            <select name="estado_id" class="form-select form-select-lg shadow-sm">
+                                @foreach($estados ?? [] as $est)
+                                    <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
+                                        {{ $est['nombre'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button class="btn btn-success w-100 py-3 fw-bold shadow-sm" type="submit">
+                            <i class="bi bi-check-circle-fill me-2"></i>Actualizar Estado
                         </button>
-                    </div>
-                </form>
-                
-                <!-- Cerrar ticket -->
-                @if($ticket['estado']['tipo'] != 'cerrado')
-                <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#cerrarModal">
-                    <i class="bi bi-check-circle me-2"></i>Actualizar Estado del Ticket
-                </button>
-                @endif
-            </div>
-        </div>
-        @endif
-        
-        <!-- Información adicional -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-1">Última actualización:</p>
-                <p class="fw-semibold mb-3">{{ \Carbon\Carbon::parse($ticket['updated_at'])->diffForHumans() }}</p>
-                
-                @if(isset($ticket['fecha_cierre']))
-                <p class="text-muted mb-1">Fecha de cierre:</p>
-                <p class="fw-semibold">{{ \Carbon\Carbon::parse($ticket['fecha_cierre'])->format('d/m/Y H:i') }}</p>
+                    </form>
                 @endif
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Cerrar Ticket -->
-<div class="modal fade" id="cerrarModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('tickets.cerrar', $ticket['id_ticket']) }}" method="POST">
+<div class="modal fade" id="modalCerrarTicket" tabindex="-1" aria-labelledby="modalCerrarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl"> <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h4 class="modal-title fw-bold" id="modalCerrarLabel">
+                    <i class="bi bi-sliders me-2"></i>Modificar estado del ticket
+                </h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ route('tickets.cambiar-estado', $ticket['id_ticket']) }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Cerrar Ticket</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Asignar técnico -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Asignar técnico:</label>
-                        <select class="form-select" name="tecnico_asignado_id">
-                            <option value="">Sin asignar</option>
-                            @foreach($tecnicos ?? [] as $tecnico)
-                            <option value="{{ $tecnico['id_usuario'] }}" 
-                                    {{ isset($ticket['tecnico_asignado']) && $ticket['tecnico_asignado']['id'] == $tecnico['id_usuario'] ? 'selected' : '' }}>
-                                {{ $tecnico['nombre_completo'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-5 border-end">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Técnico encargado:</label>
+                                <p class="fs-4 mb-0 text-dark fw-bold">
+                                    <i class="bi bi-person-check-fill me-2 text-success"></i>{{ session('usuario_nombre') }}
+                                </p>
+                                <input type="hidden" name="tecnico_id" value="{{ auth()->id() }}">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Seleccionar Nuevo estado:</label>
+                                <select name="estado_id" class="form-select form-select-lg border-success fw-bold text-success shadow-sm">
+                                    @foreach($estados ?? [] as $est)
+                                        @if(in_array($est['nombre'], ['En Proceso', 'Pendiente', 'Resuelto']))
+                                            <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
+                                                {{ $est['nombre'] }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
 
-                    <!-- Cambiar estado -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Cambiar estado:</label>
-                        <select class="form-select" name="estado_id" required>
-                            @foreach($estados ?? [] as $estado)
-                            <option value="{{ $estado['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $estado['id_estado'] ? 'selected' : '' }}>
-                                {{ $estado['nombre'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
+                        <div class="col-md-7 ps-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-2">Historial de Comentarios:</label>
+                            <div class="bg-light p-3 rounded border mb-3 shadow-inset" style="max-height: 250px; overflow-y: auto;">
+                                @forelse($comentarios ?? [] as $comentario)
+                                    <div class="mb-2 p-2 bg-white rounded border-start border-4 border-success small shadow-sm">
+                                        <div class="d-flex justify-content-between mb-1 border-bottom pb-1">
+                                            <span class="fw-bold">{{ $comentario['usuario']['nombre_completo'] }}</span>
+                                            <small class="text-muted">{{ \Carbon\Carbon::parse($comentario['created_at'])->diffForHumans() }}</small>
+                                        </div>
+                                        <p class="mb-0 text-secondary">{{ $comentario['contenido'] }}</p>
+                                    </div>
+                                @empty
+                                    <p class="text-center text-muted py-3 mb-0">No hay comentarios previos.</p>
+                                @endforelse
+                            </div>
 
-                    <!-- Solución -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Solución Aplicada: *</label>
-                        <textarea class="form-control" 
-                                  name="solucion" 
-                                  rows="5" 
-                                  placeholder="Describe detalladamente cómo se resolvió el problema..."
-                                  required></textarea>
+                            <div class="mb-0">
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Agregar nuevo comentario / avance: *</label>
+                                <textarea class="form-control border-success shadow-sm" name="contenido" rows="4" placeholder="Describe aquí qué se hizo o la razón del cambio de estado..." required></textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-2"></i>Cerrar Ticket
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
+                        <i class="bi bi-save me-1"></i> Guardar y Actualizar Ticket
                     </button>
                 </div>
             </form>
@@ -279,140 +168,12 @@
     </div>
 </div>
 
-@push('styles')
 <style>
-    .comment-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #4F46E5, #7C3AED);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-    
-    .comment-item {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        background: #F8FAFC;
-    }
-    
-    .own-comment {
-        background: #EEF2FF;
-        border-left: 3px solid #4F46E5;
-    }
-    
-    .comment-header {
-        font-size: 0.9rem;
-    }
-    
-    .comment-body {
-        color: #334155;
-        line-height: 1.6;
+    .shadow-inset { box-shadow: inset 0 2px 4px rgba(0,0,0,.06); }
+    .modal-xl { max-width: 90%; }
+    @media (max-width: 768px) {
+        .modal-xl { max-width: 95%; }
+        .col-md-5.border-end { border-right: none !important; border-bottom: 1px solid #dee2e6; margin-bottom: 1.5rem; }
     }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-function asignarTecnico() {
-    const tecnicoId = document.getElementById('tecnicoSelect').value;
-    if (!tecnicoId) {
-        alert('Selecciona un técnico');
-        return;
-    }
-    
-    fetch('{{ route("tickets.asignar", $ticket["id_ticket"]) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            tecnico_id: tecnicoId
-        })
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error al asignar técnico');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-function cambiarEstado() {
-    const estadoId = document.getElementById('estadoSelect').value;
-    if (!estadoId) {
-        alert('Selecciona un estado');
-        return;
-    }
-    
-    console.log('Cambiar estado a:', estadoId);
-    
-    fetch('{{ route("tickets.cambiar-estado", $ticket["id_ticket"]) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            estado_id: estadoId
-        })
-    })
-    .then(response => {
-        console.log('Respuesta cambiar estado:', response.status);
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Error al cambiar estado');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-function cerrarTicket() {
-    // Obtener el estado "Cerrado"
-    const estadoSelect = document.getElementById('estadoSelect');
-    const cerradoOption = Array.from(estadoSelect.options).find(opt => 
-        opt.textContent.toLowerCase().includes('cerrado')
-    );
-    
-    if (!cerradoOption) {
-        alert('No se encontró estado Cerrado');
-        return;
-    }
-    
-    // Cambiar el select al estado cerrado antes de enviar
-    estadoSelect.value = cerradoOption.value;
-    
-    fetch('{{ route("tickets.cerrar", $ticket["id_ticket"]) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            estado_id: cerradoOption.value,
-            solucion: 'Ticket cerrado desde gestor de tickets'
-        })
-    })
-    .then(response => {
-        if (response.ok) {
-            // Redirigir a la tabla de tickets después de cerrar
-            window.location.href = '{{ route("tickets.index") }}';
-        } else {
-            alert('Error al cerrar ticket');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-@endpush
 @endsection

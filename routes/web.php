@@ -64,4 +64,12 @@ Route::middleware('web.auth')->group(function () {
         Route::get('/rendimiento', [ReporteWebController::class, 'rendimiento'])->name('reportes.rendimiento');
         Route::get('/exportar', [ReporteWebController::class, 'exportar'])->name('reportes.exportar');
     });
+
+    Route::get('/tecnico/boleta-ticket/{id}', [App\Http\Controllers\Web\TicketWebController::class, 'verFichaTecnica'])->name('tecnicos.ver-ticket');
+
+    // Ruta para cambiar el estado (la que usa el botón verde)
+Route::post('/tickets/{id}/cambiar-estado', [App\Http\Controllers\Web\TicketWebController::class, 'cambiarEstado'])->name('tickets.cambiar-estado');
+
+// Ruta para los comentarios (la que causó el error rojo)
+Route::post('/tickets/{id}/comentario', [App\Http\Controllers\Web\TicketWebController::class, 'storeComentario'])->name('tickets.comentario.store');
 });

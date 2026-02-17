@@ -772,4 +772,28 @@ class TicketWebController extends Controller
             return redirect()->route('dashboard')->with('error', 'Error al cargar historial de tickets');
         }
     }
+
+    /**
+     * Nueva Vista Estilo Figma: Ficha Técnica para el Técnico
+     */
+    public function verFichaTecnica($id)
+    {
+        try {
+            // Buscamos el ticket con todas sus relaciones para que no falte ningún dato
+            $ticket = \App\Models\Ticket::with([
+                'usuario', 
+                'area', 
+                'prioridad', 
+                'estado', 
+                'comentarios.usuario' // Esto carga los comentarios con el nombre de quien los escribió
+            ])->findOrFail($id);
+            
+            // Retornamos la nueva vista que crearemos en el paso 2
+            return view('tecnicos.ver-ticket', compact('ticket'));
+            
+        } catch (\Exception $e) {
+            \Log::error("Error al abrir ficha técnica: " . $e->getMessage());
+            return redirect()->back()->with('error', 'No se pudo abrir la ficha técnica.');
+        }
+    }
 }
