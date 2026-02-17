@@ -131,12 +131,50 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        /* --- AJUSTES RESPONSIVOS AGREGADOS --- */
+        @media (max-width: 991.98px) {
+            body {
+                padding: 1rem;
+                align-items: flex-start; /* Para pantallas pequeñas permite scroll natural */
+            }
+            .register-left {
+                padding: 2rem;
+                text-align: center;
+                align-items: center;
+            }
+            .register-left p {
+                margin-bottom: 1rem;
+            }
+            .benefits {
+                display: none; /* Ocultamos beneficios en móvil para ir directo al formulario */
+            }
+            .register-right {
+                padding: 2rem;
+            }
+            .register-logo {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .register-right {
+                padding: 1.5rem;
+            }
+            .register-right h3 {
+                font-size: 1.5rem;
+            }
+            /* En celulares muy pequeños, los campos de nombre y apellido se apilan */
+            .row > .col-md-6 {
+                margin-bottom: 0; 
+            }
+        }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="row g-0 register-card">
-            <!-- LEFT SIDE -->
             <div class="col-lg-5 register-left">
                 <div class="register-logo">
                     <i class="bi bi-person-plus-fill"></i>
@@ -163,7 +201,6 @@
                 </div>
             </div>
             
-            <!-- RIGHT SIDE -->
             <div class="col-lg-7 register-right">
                 <h3>Registro de Usuario</h3>
                 <p>Completa el formulario para crear tu cuenta</p>

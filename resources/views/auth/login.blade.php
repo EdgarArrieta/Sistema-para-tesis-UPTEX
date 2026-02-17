@@ -157,12 +157,46 @@
         .register-link a:hover {
             text-decoration: underline;
         }
+
+        /* --- AJUSTES PARA HACERLO RESPONSIVO (MÓVILES Y TABLETS) --- */
+        @media (max-width: 991.98px) {
+            body {
+                padding: 1rem; /* Menos espacio en las orillas en móviles */
+                align-items: flex-start; /* Permite scroll si la pantalla es muy pequeña */
+            }
+            .login-left {
+                padding: 2rem;
+                text-align: center;
+                align-items: center;
+            }
+            .login-left p {
+                margin-bottom: 1rem;
+            }
+            .features {
+                display: none; /* Ocultamos los checks en móvil para ir directo al grano (el login) */
+            }
+            .login-right {
+                padding: 2rem;
+            }
+            .login-logo {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .login-right {
+                padding: 1.5rem;
+            }
+            .login-right h3 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="row g-0 login-card">
-            <!-- LEFT SIDE -->
             <div class="col-lg-5 login-left">
                 <div class="login-logo">
                     <i class="bi bi-ticket-perforated-fill"></i>
@@ -185,7 +219,6 @@
                 </div>
             </div>
             
-            <!-- RIGHT SIDE -->
             <div class="col-lg-7 login-right">
                 <h3>Bienvenido</h3>
                 <p>Ingresa tus credenciales para continuar</p>
