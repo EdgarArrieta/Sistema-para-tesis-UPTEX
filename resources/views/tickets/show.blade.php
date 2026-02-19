@@ -3,9 +3,24 @@
 @section('title', 'Detalle del Ticket #' . $ticket['id_ticket'])
 
 @section('content')
+
+{{-- CSS PERSONALIZADO PARA DIFERENCIAR ROLES --}}
+<style>
+    .bg-brown { background-color: #795548 !important; }
+    .btn-brown { background-color: #795548; border-color: #795548; color: white; }
+    .btn-brown:hover { background-color: #5d4037; border-color: #5d4037; color: white; }
+    .border-brown { border-color: #795548 !important; }
+    .text-brown { color: #795548 !important; }
+    .modal-xl { max-width: 90%; }
+    .shadow-inset { box-shadow: inset 0 2px 4px rgba(0,0,0,.06); }
+    @media (max-width: 768px) {
+        .modal-xl { max-width: 95%; }
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <span class="badge bg-secondary mb-2">Ticket #{{ $ticket['id_ticket'] }}</span>
+        <span class="badge bg-secondary mb-2 fs-6">Ticket #{{ $ticket['id_ticket'] }}</span>
         <h2 class="mb-0 fw-bold">{{ $ticket['titulo'] }}</h2>
     </div>
     <div class="btn-group shadow-sm">
@@ -59,78 +74,84 @@
     <div class="col-lg-4 mb-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="card-title mb-0 fw-bold text-success">
-                    <i class="bi bi-gear-fill me-2"></i>Acciones
-                </h5>
+                <h5 class="card-title mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i>Acciones</h5>
             </div>
             <div class="card-body text-center d-flex flex-column justify-content-center">
-                @if(session('usuario_rol') == 'Técnico')
-                    <div class="mb-4">
-                        <p class="text-muted small mb-2 text-uppercase fw-bold">Estado Actual:</p>
-                        <div class="border rounded py-3 px-4 d-inline-block fw-bold bg-white shadow-sm fs-4 text-primary">
-                            {{ $ticket['estado']['nombre'] }}
-                        </div>
+                @php $esTecnico = (session('usuario_rol') == 'Técnico'); @endphp
+                
+                <div class="mb-4">
+                    <p class="text-muted small mb-2 text-uppercase fw-bold">Estado Actual:</p>
+                    <div class="border rounded py-3 px-4 d-inline-block fw-bold bg-white shadow-sm fs-4 {{ $esTecnico ? 'text-success' : 'text-brown' }}">
+                        {{ $ticket['estado']['nombre'] }}
                     </div>
+                </div>
 
-                    <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCerrarTicket">
-                        <i class="bi bi-check-circle-fill me-2"></i>Actualizar Estado
+                {{-- BOTÓN DINÁMICO SEGÚN ROL --}}
+                @if($esTecnico)
+                    <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGestionTicket">
+                        <i class="bi bi-check-circle-fill me-2"></i>Actualizar Estado (Técnico)
                     </button>
                 @else
-                    <form action="{{ route('tickets.cambiar-estado', $ticket['id_ticket']) }}" method="POST">
-                        @csrf
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold">Cambiar estado:</label>
-                            <select name="estado_id" class="form-select form-select-lg shadow-sm">
-                                @foreach($estados ?? [] as $est)
-                                    <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
-                                        {{ $est['nombre'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button class="btn btn-success w-100 py-3 fw-bold shadow-sm" type="submit">
-                            <i class="bi bi-check-circle-fill me-2"></i>Actualizar Estado
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-brown w-100 py-3 fw-bold fs-5 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalGestionTicket">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Modificar Estado (Admin)
+                    </button>
                 @endif
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalCerrarTicket" tabindex="-1" aria-labelledby="modalCerrarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl"> <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-success text-white">
-                <h4 class="modal-title fw-bold" id="modalCerrarLabel">
-                    <i class="bi bi-sliders me-2"></i>Modificar estado del ticket
+<div class="modal fade" id="modalGestionTicket" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg">
+            {{-- CABECERA DINÁMICA: VERDE O MARRÓN --}}
+            <div class="modal-header {{ $esTecnico ? 'bg-success' : 'bg-brown' }} text-white py-3">
+                <h4 class="modal-title fw-bold">
+                    <i class="bi {{ $esTecnico ? 'bi-sliders' : 'bi-shield-shaded' }} me-2"></i>
+                    Gestión de Ticket - Modo {{ session('usuario_rol') }}
                 </h4>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             
             <form action="{{ route('tickets.cambiar-estado', $ticket['id_ticket']) }}" method="POST">
                 @csrf
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 text-start">
                     <div class="row">
                         <div class="col-md-5 border-end">
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Técnico encargado:</label>
-                                <p class="fs-4 mb-0 text-dark fw-bold">
-                                    <i class="bi bi-person-check-fill me-2 text-success"></i>{{ session('usuario_nombre') }}
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Usuario operando:</label>
+                                <p class="fs-4 mb-0 fw-bold">
+                                    <i class="bi bi-person-circle me-2 {{ $esTecnico ? 'text-success' : 'text-brown' }}"></i>
+                                    {{ session('usuario_nombre') }}
                                 </p>
                                 <input type="hidden" name="tecnico_id" value="{{ auth()->id() }}">
                             </div>
                             
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Seleccionar Nuevo estado:</label>
-                                <select name="estado_id" class="form-select form-select-lg border-success fw-bold text-success shadow-sm">
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Cambiar estado a:</label>
+                                <select name="estado_id" class="form-select form-select-lg fw-bold {{ $esTecnico ? 'border-success text-success' : 'border-brown text-brown shadow-sm' }}">
                                     @foreach($estados ?? [] as $est)
-                                        @if(in_array($est['nombre'], ['En Proceso', 'Pendiente', 'Resuelto']))
-                                            <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
-                                                {{ $est['nombre'] }}
-                                            </option>
+                                        @if($esTecnico)
+                                            {{-- FILTRO PARA TÉCNICO: EN PROCESO, PENDIENTE, RESUELTO --}}
+                                            @if(in_array($est['nombre'], ['En Proceso', 'Pendiente', 'Resuelto']))
+                                                <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
+                                                    {{ $est['nombre'] }}
+                                                </option>
+                                            @endif
+                                        @else
+                                            {{-- FILTRO PARA ADMINISTRADOR: ABIERTO Y CERRADO --}}
+                                            @if(in_array($est['nombre'], ['Abierto', 'Cerrado']))
+                                                <option value="{{ $est['id_estado'] }}" {{ $ticket['estado']['id_estado'] == $est['id_estado'] ? 'selected' : '' }}>
+                                                    {{ $est['nombre'] }}
+                                                </option>
+                                            @endif
                                         @endif
                                     @endforeach
                                 </select>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    {{ $esTecnico ? 'Opciones limitadas para técnico.' : 'Opciones exclusivas para administrador.' }}
+                                </small>
                             </div>
                         </div>
 
@@ -138,7 +159,7 @@
                             <label class="form-label fw-bold small text-muted text-uppercase mb-2">Historial de Comentarios:</label>
                             <div class="bg-light p-3 rounded border mb-3 shadow-inset" style="max-height: 250px; overflow-y: auto;">
                                 @forelse($comentarios ?? [] as $comentario)
-                                    <div class="mb-2 p-2 bg-white rounded border-start border-4 border-success small shadow-sm">
+                                    <div class="mb-2 p-2 bg-white rounded border-start border-4 {{ $esTecnico ? 'border-success' : 'border-brown' }} shadow-sm">
                                         <div class="d-flex justify-content-between mb-1 border-bottom pb-1">
                                             <span class="fw-bold">{{ $comentario['usuario']['nombre_completo'] }}</span>
                                             <small class="text-muted">{{ \Carbon\Carbon::parse($comentario['created_at'])->diffForHumans() }}</small>
@@ -151,29 +172,20 @@
                             </div>
 
                             <div class="mb-0">
-                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Agregar nuevo comentario / avance: *</label>
-                                <textarea class="form-control border-success shadow-sm" name="contenido" rows="4" placeholder="Describe aquí qué se hizo o la razón del cambio de estado..." required></textarea>
+                                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Agregar comentario / avance: *</label>
+                                <textarea class="form-control {{ $esTecnico ? 'border-success' : 'border-brown shadow-sm' }}" name="contenido" rows="4" placeholder="Indica el motivo del cambio de estado..." required></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-top-0">
-                    <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
-                        <i class="bi bi-save me-1"></i> Guardar y Actualizar Ticket
+                <div class="modal-footer bg-light py-3 border-top">
+                    <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn {{ $esTecnico ? 'btn-success' : 'btn-brown' }} px-5 fw-bold shadow">
+                        <i class="bi bi-save me-1"></i> {{ $esTecnico ? 'Guardar Cambios' : 'Aplicar Cambios (Admin)' }}
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-    .shadow-inset { box-shadow: inset 0 2px 4px rgba(0,0,0,.06); }
-    .modal-xl { max-width: 90%; }
-    @media (max-width: 768px) {
-        .modal-xl { max-width: 95%; }
-        .col-md-5.border-end { border-right: none !important; border-bottom: 1px solid #dee2e6; margin-bottom: 1.5rem; }
-    }
-</style>
 @endsection

@@ -1,149 +1,54 @@
 @extends('layouts.app')
 
-@section('title', 'Crear Usuario')
+@section('title', 'Registrar Usuario - UPTEX')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-person-plus"></i> Crear Nuevo Usuario</h2>
-    <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Volver
-    </a>
-</div>
-
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-person-badge"></i> Información del Usuario
-            </div>
-            <div class="card-body">
-                <form action="{{ route('usuarios.store') }}" method="POST">
-                    @csrf
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="nombre" class="form-label">Nombre *</label>
-                            <input type="text" 
-                                   class="form-control @error('nombre') is-invalid @enderror" 
-                                   id="nombre" 
-                                   name="nombre" 
-                                   value="{{ old('nombre') }}"
-                                   required>
-                            @error('nombre')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="apellido" class="form-label">Apellido *</label>
-                            <input type="text" 
-                                   class="form-control @error('apellido') is-invalid @enderror" 
-                                   id="apellido" 
-                                   name="apellido" 
-                                   value="{{ old('apellido') }}"
-                                   required>
-                            @error('apellido')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="correo" class="form-label">Correo Electrónico *</label>
-                        <input type="email" 
-                               class="form-control @error('correo') is-invalid @enderror" 
-                               id="correo" 
-                               name="correo" 
-                               value="{{ old('correo') }}"
-                               placeholder="usuario@uptex.edu.mx"
-                               required>
-                        @error('correo')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label">Contraseña *</label>
-                            <input type="password" 
-                                   class="form-control @error('password') is-invalid @enderror" 
-                                   id="password" 
-                                   name="password" 
-                                   required>
-                            @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="id_rol" class="form-label">Rol *</label>
-                            <select class="form-select @error('id_rol') is-invalid @enderror" 
-                                    id="id_rol" 
-                                    name="id_rol" 
-                                    required>
-                                <option value="">Seleccione un rol</option>
-                                @foreach($roles ?? [] as $rol)
-                                <option value="{{ $rol['id_rol'] }}" {{ old('id_rol') == $rol['id_rol'] ? 'selected' : '' }}>
-                                    {{ $rol['nombre'] }}
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('id_rol')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" 
-                                   type="checkbox" 
-                                   id="activo" 
-                                   name="activo" 
-                                   value="1"
-                                   {{ old('activo', true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="activo">
-                                Usuario activo
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-circle"></i> Crear Usuario
-                        </button>
-                        <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
-                            Cancelar
-                        </a>
-                    </div>
-                </form>
-            </div>
+<div class="container-fluid px-4">
+    <div class="mb-4 mt-2 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold"><i class="bi bi-person-plus text-primary me-2"></i> Registrar Nuevo Usuario</h2>
+            <p class="text-muted small">Crea un nuevo usuario para el sistema de tickets.</p>
         </div>
+        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+        </a>
     </div>
-    
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-info-circle"></i> Información
-            </div>
-            <div class="card-body">
-                <h6>Roles disponibles:</h6>
-                <ul class="small">
-                    <li><strong>Administrador:</strong> Acceso total al sistema</li>
-                    <li><strong>Técnico:</strong> Gestiona tickets asignados</li>
-                    <li><strong>Usuario Normal:</strong> Crea y consulta tickets</li>
-                </ul>
-                
-                <hr>
-                
-                <h6>Requisitos:</h6>
-                <ul class="small">
-                    <li>Todos los campos son obligatorios</li>
-                    <li>El correo debe ser único</li>
-                    <li>La contraseña mínimo 6 caracteres</li>
-                </ul>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm border-top border-4 border-primary">
+                <div class="card-body p-4">
+                    <form action="{{ route('admin.usuarios.store') }}" method="POST">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Nombre(s):</label>
+                                <input type="text" name="nombre" class="form-control bg-light border-0 py-2" required placeholder="Ej. Juan">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Apellido(s):</label>
+                                <input type="text" name="apellido" class="form-control bg-light border-0 py-2" required placeholder="Ej. Pérez">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Correo Electrónico:</label>
+                                <input type="email" name="correo" class="form-control bg-light border-0 py-2" required placeholder="usuario@correo.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Contraseña:</label>
+                                <input type="password" name="password" class="form-control bg-light border-0 py-2" required placeholder="Mínimo 6 caracteres">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Confirmar Contraseña:</label>
+                                <input type="password" name="password_confirmation" class="form-control bg-light border-0 py-2" required placeholder="Repite la contraseña">
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-top text-end">
+                            <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                                <i class="bi bi-save me-1"></i> Guardar Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

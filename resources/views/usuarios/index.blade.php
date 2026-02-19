@@ -135,6 +135,8 @@
 <script>
 $(document).ready(function() {
     let dataTableInstance = null;
+    const currentUserId = {{ session('usuario_id') }};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
     
     // Función para cargar y actualizar usuarios
     function cargarUsuarios() {
@@ -180,6 +182,38 @@ $(document).ready(function() {
                         ? '<span class="badge bg-success">Activo</span>'
                         : '<span class="badge bg-danger">Inactivo</span>';
                     
+                    // Crear HTML para los botones
+                    let botonesHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/usuarios/${usuario.id_usuario}" class="btn btn-info" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="/usuarios/${usuario.id_usuario}/edit" class="btn btn-warning" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="/usuarios/${usuario.id_usuario}/toggle-activo" method="POST" style="display:inline;">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <button type="submit" class="btn ${usuario.activo ? 'btn-secondary' : 'btn-success'}" title="${usuario.activo ? 'Desactivar' : 'Activar'}">
+                                    <i class="bi bi-power"></i>
+                                </button>
+                            </form>
+                    `;
+                    
+                    // Agregar botón de eliminar solo si no es el usuario actual
+                    if (usuario.id_usuario !== currentUserId) {
+                        botonesHTML += `
+                            <form action="/usuarios/${usuario.id_usuario}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">
+                                <input type="hidden" name="_token" value="${csrfToken}">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        `;
+                    }
+                    
+                    botonesHTML += `</div>`;
+                    
                     const row = `
                         <tr>
                             <td><strong>#${usuario.id_usuario}</strong></td>
@@ -191,22 +225,7 @@ $(document).ready(function() {
                             <td>${rolBadge}</td>
                             <td>${estadoBadge}</td>
                             <td>${new Date(usuario.created_at).toLocaleDateString('es-ES', {year: 'numeric', month: '2-digit', day: '2-digit'})}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="/usuarios/${usuario.id_usuario}" class="btn btn-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="/usuarios/${usuario.id_usuario}/edit" class="btn btn-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button" class="btn ${usuario.activo ? 'btn-secondary' : 'btn-success'}" title="${usuario.activo ? 'Desactivar' : 'Activar'}">
-                                        <i class="bi bi-power"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <td>${botonesHTML}</td>
                         </tr>
                     `;
                     tbody.append(row);

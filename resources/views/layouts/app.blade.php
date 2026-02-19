@@ -129,10 +129,24 @@
             <div class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="bi bi-house-door"></i>
-                    <span>Panel de Administrador</span>
+                    <span>
+                        @if(session('usuario_rol') == 'Administrador') Panel de Administrador 
+                        @elseif(session('usuario_rol') == 'Técnico') Panel de Trabajo 
+                        @else Mi Dashboard @endif
+                    </span>
                 </a>
             </div>
             
+            @if(session('usuario_rol') == 'Técnico')
+                <div class="nav-section-title">Trabajo Técnico</div>
+                <div class="nav-item">
+                    <a href="{{ route('tickets.mis-tickets') }}" class="nav-link {{ request()->routeIs('tickets.mis-tickets') ? 'active' : '' }}">
+                        <i class="bi bi-list-task"></i>
+                        <span>Todos los Tickets</span>
+                    </a>
+                </div>
+            @endif
+
             @if(session('usuario_rol') == 'Administrador')
                 <div class="nav-section-title">Gestión</div>
                 <div class="nav-item">
@@ -144,13 +158,29 @@
                 <div class="nav-item">
                     <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                         <i class="bi bi-graph-up"></i>
-                        <span>Dashboard</span>
+                        <span>Dashboard Global</span>
                     </a>
                 </div>
                 <div class="nav-item">
                     <a href="{{ route('tickets.index') }}" class="nav-link {{ request()->routeIs('tickets.index') ? 'active' : '' }}">
                         <i class="bi bi-ticket"></i>
                         <span>Ver Tickets</span>
+                    </a>
+                </div>
+            @endif
+
+            @if(session('usuario_rol') == 'Usuario Normal')
+                <div class="nav-section-title">Mis Trámites</div>
+                <div class="nav-item">
+                    <a href="{{ route('tickets.create') }}" class="nav-link {{ request()->routeIs('tickets.create') ? 'active' : '' }}">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Crear Ticket</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ route('tickets.mis-tickets') }}" class="nav-link {{ request()->routeIs('tickets.mis-tickets') ? 'active' : '' }}">
+                        <i class="bi bi-ticket-detailed"></i>
+                        <span>Mis Tickets</span>
                     </a>
                 </div>
             @endif
@@ -195,6 +225,32 @@
     </header>
     
     <main class="main-content">
+        <div class="container-fluid px-4 mt-3">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm fw-bold" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-alert="close" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm fw-bold" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-alert="close" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <ul class="mb-0 fw-bold">
+                        @foreach ($errors->all() as $error)
+                            <li><i class="bi bi-x-circle me-1"></i> {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-alert="close" aria-label="Close"></button>
+                </div>
+            @endif
+        </div>
         @yield('content')
     </main>
     
@@ -213,7 +269,6 @@
                 });
             }
 
-            // Cerrar menú si se toca la capa oscura
             if (overlay) {
                 overlay.addEventListener('click', function() {
                     sidebar.classList.remove('show');
