@@ -88,7 +88,7 @@
                 <hr class="my-2">
                 <div class="flex-grow-1 d-flex flex-column">
                     <label class="text-muted fw-bold text-uppercase mb-1 d-block" style="font-size: 1rem;">Historial de Comentarios:</label>
-                    <div class="bg-light p-2 rounded border shadow-inset flex-grow-1" style="overflow-y: auto;">
+                    <div class="bg-light p-2 rounded border shadow-inset flex-grow-1" style="overflow-y: auto;" data-comentarios-container>
                         @forelse($comentarios ?? [] as $comentario)
                             <div class="mb-2 p-2 bg-white rounded border-start border-4 border-success shadow-sm">
                                 <div class="d-flex justify-content-between mb-1 border-bottom pb-1">
@@ -114,7 +114,7 @@
             <div class="card-body p-4 text-center d-flex flex-column justify-content-between flex-grow-1">
                 <div class="mb-3">
                     <p class="text-muted mb-3 text-uppercase fw-bold ls-1" style="font-size: 1rem;">Estado Actual:</p>
-                    <div class="rounded-pill py-4 px-4 d-inline-block fw-bold shadow {{ $esTecnico ? 'bg-success text-white' : 'bg-brown text-white' }}" style="min-width: 150px; font-size: 1.4rem;">
+                    <div class="rounded-pill py-4 px-4 d-inline-block fw-bold shadow {{ $esTecnico ? 'bg-success text-white' : 'bg-brown text-white' }}" style="min-width: 150px; font-size: 1.4rem;" data-estado-badge>
                         <i class="bi {{ $esTecnico ? 'bi-check-circle-fill' : 'bi-lock-fill' }} me-2"></i>{{ $ticket['estado']['nombre'] }}
                     </div>
                 </div>
@@ -122,7 +122,7 @@
                 @if($esTecnico)
                 <div class="mb-4 p-3 rounded bg-white shadow-sm border-start border-4 border-success">
                     <p class="text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.95rem;">Última actualización:</p>
-                    <p class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;">{{ \Carbon\Carbon::parse($ticket['updated_at'])->format('d/m/Y H:i') }}</p>
+                    <p class="mb-0 fw-bold text-dark" style="font-size: 1.1rem;" data-ultima-actualizacion>{{ $ticket['updated_at_formatted'] }}</p>
                 </div>
                 @endif
 

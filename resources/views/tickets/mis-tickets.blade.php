@@ -210,4 +210,93 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshIntervalMs = 60000; // 60 segundos
+    let currentFilters = {
+        estado_id: new URLSearchParams(window.location.search).get('estado_id') || '',
+        prioridad_id: new URLSearchParams(window.location.search).get('prioridad_id') || '',
+        search: new URLSearchParams(window.location.search).get('search') || ''
+    };
+
+    function actualizarTickets() {
+        const params = new URLSearchParams(currentFilters);
+        
+        fetch(`{{ route('api.mis-tickets') }}?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('table tbody');
+                if (!tbody) return;
+
+                // Limpiar tabla actual
+                tbody.innerHTML = '';
+
+                // Agregar nuevas filas
+                data.forEach(ticket => {
+                    const row = document.createElement('tr');
+                    
+                    const estadoBadgeClass = `badge-estado-${ticket.estado_tipo}`;
+                    const prioridadBadgeClass = `badge-prioridad-${ticket.prioridad_nivel}`;
+                    const ticketUrl = `/tickets/${ticket.id_ticket}`;
+                    
+                    row.innerHTML = `
+                        <td><strong>#${ticket.id_ticket}</strong></td>
+                        <td>
+                            <a href="${ticketUrl}" class="text-decoration-none">
+                                ${ticket.titulo}
+                            </a>
+                            <br>
+                            <small class="text-muted">${ticket.usuario_nombre}</small>
+                        </td>
+                        <td>
+                            <span class="badge ${prioridadBadgeClass}">
+                                ${ticket.prioridad_nombre}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${estadoBadgeClass}">
+                                ${ticket.estado_nombre}
+                            </span>
+                        </td>
+                        <td>${ticket.fecha_creacion}</td>
+                        <td>${ticket.fecha_cierre}</td>
+                        <td>
+                            <a href="${ticketUrl}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Gestionar
+                            </a>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+                // Si hay datos vacíos, mostrar mensaje
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay tickets que coincidan con los filtros</td></tr>';
+                }
+            })
+            .catch(error => console.error('Error al actualizar tickets:', error));
+    }
+
+    // Auto-refresh cada 60 segundos
+    setInterval(actualizarTickets, refreshIntervalMs);
+
+    // Actualizar cuando cambian los filtros
+    const formFiltros = document.querySelector('form[action="{{ route('tickets.mis-tickets') }}"]');
+    if (formFiltros) {
+        formFiltros.addEventListener('submit', function(e) {
+            e.preventDefault();
+            currentFilters = {
+                estado_id: document.querySelector('select[name="estado_id"]')?.value || '',
+                prioridad_id: document.querySelector('select[name="prioridad_id"]')?.value || '',
+                search: document.querySelector('input[name="search"]')?.value || ''
+            };
+            actualizarTickets();
+        });
+    }
+});
+</script>
+@endpush
 @endsection

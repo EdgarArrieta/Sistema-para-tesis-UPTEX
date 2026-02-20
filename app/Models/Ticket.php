@@ -21,6 +21,9 @@ class Ticket extends Model
         'fecha_creacion',
         'fecha_cierre',
         'solucion',
+        'id_estado',
+        'created_at',
+        'updated_at',
     ];
     
     protected $casts = [

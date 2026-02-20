@@ -60,6 +60,8 @@ class TicketWebController extends Controller
             $ticket['prioridad']['nombre'] = $t->prioridad->nombre ?? 'N/A';
             $ticket['estado']['nombre'] = $t->estado->nombre ?? 'N/A';
             $ticket['estado']['tipo'] = $t->estado->tipo ?? 'abierto';
+            // Formatear updated_at con la zona horaria correcta
+            $ticket['updated_at_formatted'] = $t->updated_at->setTimezone('America/Mexico_City')->format('d/m/Y H:i');
             if (str_contains(session('usuario_rol'), 'Técnico')) {
                 $estados = Estado::whereIn('tipo', ['en_proceso', 'pendiente', 'resuelto'])->get();
             } else { $estados = Estado::all(); }
@@ -170,19 +172,19 @@ class TicketWebController extends Controller
             // Validar permiso para técnico
             if (str_contains(session('usuario_rol'), 'Técnico')) {
                 if ($ticket->tecnico_asignado_id != session('usuario_id')) {
-                    return redirect()->route('tickets.asignados')->with('error', 'No tienes permiso para modificar este ticket');
+                    return redirect()->route('tickets.show', $id)->with('error', 'No tienes permiso para modificar este ticket');
                 }
             }
 
-            // Actualizar estado del ticket
-            $ticket->update([
-                'estado_id' => $request->estado_id,
-            ]);
+            // Actualizar estado (Laravel actualiza automáticamente updated_at)
+            $ticket->estado_id = $request->estado_id;
+            $ticket->save();
 
             // Si el estado es "Resuelto", registrar fecha de cierre
             $estado = Estado::find($request->estado_id);
             if ($estado && $estado->nombre === 'Resuelto') {
-                $ticket->update(['fecha_cierre' => now()]);
+                $ticket->fecha_cierre = now();
+                $ticket->save();
             }
 
             // Crear comentario
@@ -190,8 +192,6 @@ class TicketWebController extends Controller
                 'ticket_id' => $id,
                 'usuario_id' => session('usuario_id'),
                 'contenido' => $request->contenido,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
 
             if (str_contains(session('usuario_rol'), 'Técnico')) {
@@ -201,6 +201,115 @@ class TicketWebController extends Controller
             }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al actualizar: ' . $e->getMessage());
+        }
+    }
+
+    // ===== ENDPOINTS API PARA AUTO-REFRESH =====
+
+    /** API: Obtener contadores de tickets */
+    public function apiContadores()
+    {
+        try {
+            $tecnicoId = session('usuario_id');
+            $estado = Ticket::where('tecnico_asignado_id', $tecnicoId)->with('estado')->get();
+            
+            $contadores = [
+                'total' => $estado->count(),
+                'en_proceso' => $estado->filter(fn($t) => $t->estado->nombre === 'En Proceso')->count(),
+                'pendiente' => $estado->filter(fn($t) => $t->estado->nombre === 'Pendiente')->count(),
+                'resuelto' => $estado->filter(fn($t) => $t->estado->nombre === 'Resuelto')->count(),
+            ];
+            
+            return response()->json($contadores);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /** API: Obtener lista de mis tickets en JSON */
+    public function apiMisTickets(Request $request)
+    {
+        try {
+            $tecnicoId = session('usuario_id');
+            $query = Ticket::where('tecnico_asignado_id', $tecnicoId)->with(['usuario', 'area', 'prioridad', 'estado']);
+            
+            // Filtros
+            if ($request->estado_id) {
+                $query->where('id_estado', $request->estado_id);
+            }
+            if ($request->prioridad_id) {
+                $query->where('id_prioridad', $request->prioridad_id);
+            }
+            if ($request->search) {
+                $search = '%' . $request->search . '%';
+                $query->where('titulo', 'like', $search)->orWhere('descripcion', 'like', $search);
+            }
+            
+            $tickets = $query->orderBy('fecha_creacion', 'desc')->get();
+            
+            $resultado = $tickets->map(function($t) {
+                return [
+                    'id_ticket' => $t->id_ticket,
+                    'titulo' => $t->titulo,
+                    'usuario_nombre' => ($t->usuario->nombre ?? 'N/A') . ' ' . ($t->usuario->apellido ?? ''),
+                    'prioridad_nombre' => $t->prioridad->nombre ?? 'N/A',
+                    'prioridad_nivel' => $t->prioridad->nivel ?? 'media',
+                    'estado_nombre' => $t->estado->nombre ?? 'N/A',
+                    'estado_tipo' => $t->estado->tipo ?? 'abierto',
+                    'fecha_creacion' => \Carbon\Carbon::parse($t->fecha_creacion)->format('d/m/Y H:i'),
+                    'fecha_cierre' => $t->fecha_cierre ? \Carbon\Carbon::parse($t->fecha_cierre)->format('d/m/Y H:i') : 'N/A',
+                ];
+            });
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /** API: Obtener detalle del ticket en JSON */
+    public function apiTicketDetalle($id)
+    {
+        try {
+            $t = Ticket::with(['usuario', 'area', 'prioridad', 'estado', 'tecnicoAsignado'])->findOrFail($id);
+            
+            return response()->json([
+                'id_ticket' => $t->id_ticket,
+                'titulo' => $t->titulo,
+                'descripcion' => $t->descripcion,
+                'usuario_nombre' => ($t->usuario->nombre ?? 'N/A') . ' ' . ($t->usuario->apellido ?? ''),
+                'area_nombre' => $t->area->nombre ?? 'N/A',
+                'prioridad_nombre' => $t->prioridad->nombre ?? 'N/A',
+                'prioridad_nivel' => $t->prioridad->nivel ?? 'media',
+                'estado_nombre' => $t->estado->nombre ?? 'N/A',
+                'estado_id' => $t->id_estado,
+                'fecha_creacion' => \Carbon\Carbon::parse($t->fecha_creacion)->format('d/m/Y H:i'),
+                'fecha_cierre' => $t->fecha_cierre ? \Carbon\Carbon::parse($t->fecha_cierre)->format('d/m/Y H:i') : null,
+                'updated_at' => \Carbon\Carbon::parse($t->updated_at)->format('d/m/Y H:i'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /** API: Obtener comentarios actualizados de un ticket */
+    public function apiComentariosTicket($id)
+    {
+        try {
+            $comentarios = Comentario::where('id_ticket', $id)->with('usuario')->orderBy('created_at', 'asc')->get();
+            
+            $resultado = $comentarios->map(function($c) {
+                return [
+                    'id_comentario' => $c->id_comentario,
+                    'usuario_nombre' => ($c->usuario->nombre ?? 'N/A') . ' ' . ($c->usuario->apellido ?? ''),
+                    'contenido' => $c->contenido,
+                    'created_at' => \Carbon\Carbon::parse($c->created_at)->format('d/m/Y H:i'),
+                ];
+            });
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

@@ -30,6 +30,12 @@ Route::middleware('web.auth')->group(function () {
     Route::post('/tickets/{id}/cerrar', [TicketWebController::class, 'cerrar'])->name('tickets.cerrar');
     Route::post('/tickets/{id}/comentarios', [TicketWebController::class, 'storeComentario'])->name('tickets.comentarios.store');
     Route::get('/mis-tickets', [TicketWebController::class, 'misTickets'])->name('tickets.mis-tickets');
+    
+    // ===== ENDPOINTS API PARA AUTO-REFRESH =====
+    Route::get('/api/contadores', [TicketWebController::class, 'apiContadores'])->name('api.contadores');
+    Route::get('/api/mis-tickets', [TicketWebController::class, 'apiMisTickets'])->name('api.mis-tickets');
+    Route::get('/api/ticket/{id}', [TicketWebController::class, 'apiTicketDetalle'])->name('api.ticket.detalle');
+    Route::get('/api/ticket/{id}/comentarios', [TicketWebController::class, 'apiComentariosTicket'])->name('api.ticket.comentarios');
 
     // --- SOLO ADMINISTRADORES (UPTEX) ---
     Route::middleware('web.admin')->group(function () {

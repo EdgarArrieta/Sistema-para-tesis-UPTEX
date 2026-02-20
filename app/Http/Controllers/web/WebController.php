@@ -20,8 +20,8 @@ class WebController extends Controller
             if (!$usuario || !Hash::check($request->password, $usuario->password)) {
                 return back()->withErrors(['correo' => 'Credenciales incorrectas'])->withInput();
             }
-            // Actualizar última acceso al login
-            $usuario->update(['updated_at' => now()]);
+            // Actualizar último acceso al login con zona horaria de México
+            $usuario->update(['last_login' => \Carbon\Carbon::now('America/Mexico_City')]);
             session(['token' => bin2hex(random_bytes(32)), 'usuario_id' => $usuario->id_usuario, 'usuario_nombre' => $usuario->nombre_completo, 'usuario_rol' => $usuario->rol->nombre]);
             return redirect()->route('dashboard');
         } catch (\Exception $e) { return back()->withErrors(['error' => 'Error al entrar']); }
@@ -58,7 +58,7 @@ class WebController extends Controller
     public function logout(Request $request) { $request->session()->flush(); return redirect()->route('login'); }
     public function showRegister() { return view('auth.register'); }
     public function register(Request $request) { return redirect()->route('login'); }
-    public function perfil() { $usuario = Usuario::find(session('usuario_id')); return view('perfil', compact('usuario')); }
+    public function perfil() { $usuario = Usuario::with('rol')->find(session('usuario_id'))->toArray(); return view('perfil', compact('usuario')); }
     
     public function updatePerfil(Request $request) { 
         $usuario = Usuario::find(session('usuario_id'));

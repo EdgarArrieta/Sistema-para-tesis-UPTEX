@@ -25,6 +25,7 @@ class Usuario extends Authenticatable
         'id_rol',
         'activo',
         'email_verified_at',
+        'last_login',
     ];
 
     protected $hidden = [
@@ -39,6 +40,7 @@ class Usuario extends Authenticatable
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'last_login' => 'datetime',
     ];
 
     public function rol()
