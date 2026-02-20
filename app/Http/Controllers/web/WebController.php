@@ -20,6 +20,8 @@ class WebController extends Controller
             if (!$usuario || !Hash::check($request->password, $usuario->password)) {
                 return back()->withErrors(['correo' => 'Credenciales incorrectas'])->withInput();
             }
+            // Actualizar última acceso al login
+            $usuario->update(['updated_at' => now()]);
             session(['token' => bin2hex(random_bytes(32)), 'usuario_id' => $usuario->id_usuario, 'usuario_nombre' => $usuario->nombre_completo, 'usuario_rol' => $usuario->rol->nombre]);
             return redirect()->route('dashboard');
         } catch (\Exception $e) { return back()->withErrors(['error' => 'Error al entrar']); }
@@ -57,5 +59,30 @@ class WebController extends Controller
     public function showRegister() { return view('auth.register'); }
     public function register(Request $request) { return redirect()->route('login'); }
     public function perfil() { $usuario = Usuario::find(session('usuario_id')); return view('perfil', compact('usuario')); }
-    public function updatePerfil(Request $request) { return back(); }
+    
+    public function updatePerfil(Request $request) { 
+        $usuario = Usuario::find(session('usuario_id'));
+        
+        // Validar
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'correo' => 'required|email|unique:usuarios,correo,' . $usuario->id_usuario . ',id_usuario',
+            'password' => 'nullable|min:8|confirmed',
+        ]);
+        
+        // Actualizar datos básicos
+        $usuario->update([
+            'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
+            'correo' => $validated['correo'],
+        ]);
+        
+        // Si se proporciona contraseña, actualizar
+        if (!empty($validated['password'])) {
+            $usuario->update(['password' => Hash::make($validated['password'])]);
+        }
+        
+        return back()->with('success', 'Perfil actualizado correctamente');
+    }
 }

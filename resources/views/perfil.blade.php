@@ -3,6 +3,25 @@
 @section('title', 'Mi Perfil')
 
 @section('content')
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> Por favor corrige los errores:
+    <ul class="mb-0 mt-2">
+        @foreach($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-person-circle"></i> Mi Perfil</h2>
 </div>
@@ -27,14 +46,30 @@
         
         <div class="card mt-3">
             <div class="card-header">
-                <i class="bi bi-info-circle"></i> Información de Cuenta
+                <i class="bi bi-info-circle"></i> 
+                @if(str_contains(session('usuario_rol'), 'Técnico'))
+                    Fecha de Creación y Último Acceso
+                @else
+                    Información de Cuenta
+                @endif
             </div>
             <div class="card-body">
                 <p><small class="text-muted">Miembro desde:</small><br>
                 {{ \Carbon\Carbon::parse($usuario['created_at'])->format('d/m/Y') }}</p>
                 
-                <p><small class="text-muted">Última actualización:</small><br>
-                {{ \Carbon\Carbon::parse($usuario['updated_at'])->diffForHumans() }}</p>
+                <p><small class="text-muted">
+                    @if(str_contains(session('usuario_rol'), 'Técnico'))
+                        Último acceso:
+                    @else
+                        Última actualización:
+                    @endif
+                </small><br>
+                @if(str_contains(session('usuario_rol'), 'Técnico'))
+                    {{ \Carbon\Carbon::parse($usuario['updated_at'])->format('d/m/Y') }}
+                @else
+                    {{ \Carbon\Carbon::parse($usuario['updated_at'])->diffForHumans() }}
+                @endif
+                </p>
             </div>
         </div>
     </div>
@@ -45,7 +80,7 @@
                 <i class="bi bi-pencil-square"></i> Editar Información
             </div>
             <div class="card-body">
-                <form action="{{ route('perfil.update') }}" method="POST">
+                <form action="{{ route('perfil.update') }}" method="POST" autocomplete="off">
                     @csrf
                     @method('PUT')
                     
@@ -56,7 +91,8 @@
                                    class="form-control @error('nombre') is-invalid @enderror" 
                                    id="nombre" 
                                    name="nombre" 
-                                   value="{{ old('nombre', $usuario['nombre']) }}">
+                                   value="{{ old('nombre', $usuario['nombre']) }}"
+                                   autocomplete="off">
                             @error('nombre')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -68,7 +104,8 @@
                                    class="form-control @error('apellido') is-invalid @enderror" 
                                    id="apellido" 
                                    name="apellido" 
-                                   value="{{ old('apellido', $usuario['apellido']) }}">
+                                   value="{{ old('apellido', $usuario['apellido']) }}"
+                                   autocomplete="off">
                             @error('apellido')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -81,7 +118,8 @@
                                class="form-control @error('correo') is-invalid @enderror" 
                                id="correo" 
                                name="correo" 
-                               value="{{ old('correo', $usuario['correo']) }}">
+                               value="{{ old('correo', $usuario['correo']) }}"
+                               autocomplete="off">
                         @error('correo')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -90,7 +128,6 @@
                     <hr>
                     
                     <h6>Cambiar Contraseña</h6>
-                    <p class="text-muted small">Deja en blanco si no deseas cambiar tu contraseña</p>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -98,7 +135,10 @@
                             <input type="password" 
                                    class="form-control @error('password') is-invalid @enderror" 
                                    id="password" 
-                                   name="password">
+                                   name="password"
+                                   autocomplete="off"
+                                   spellcheck="false"
+                                   value="">
                             @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -109,7 +149,10 @@
                             <input type="password" 
                                    class="form-control" 
                                    id="password_confirmation" 
-                                   name="password_confirmation">
+                                   name="password_confirmation"
+                                   autocomplete="off"
+                                   spellcheck="false"
+                                   value="">
                         </div>
                     </div>
                     
